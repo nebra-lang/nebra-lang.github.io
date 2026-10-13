@@ -8,36 +8,46 @@ description: "Type contracts, interface inheritance, default methods and impleme
 
 Interfaces define type contracts. They are compile-time only and emit **no Lua code**.
 
-> ⚠️ **Interface methods do NOT have implicit `self`.**
-> Unlike [class instance methods](./classes.md#methods), interface methods are
-> stored as-written - the type checker treats their declared parameter list as
-> the full contract. This is intentional: `interface` doubles as the shape syntax
-> for module-style declarations like the stdlib's `declare interface StringLib`
-> + `declare string: StringLib`, where members are called as `string.upper(s)`
-> with no receiver.
->
-> Practical consequence for OOP-style interfaces: when a class `implements` an
-> interface, calling `(value: Interface):method(args)` on an interface-typed
-> value type-checks the args **as written** (no receiver injected). At Lua
-> runtime the colon still passes the receiver as `self`, and the implementing
-> class's method receives it - this works because class instance methods do
-> have implicit self.
->
-> tl;dr - for now, treat interface method declarations as plain function fields.
-> The dot-vs-colon decision is on you at the call site. A future Nebra version may
-> add an explicit `method` keyword to disambiguate "module function" from
-> "instance contract".
+## `method` and `function` Members
+
+An interface member is declared with either `method` or `function`, and the keyword decides
+how it is called:
+
+- **`method`** declares an instance method. It receives the value it is called on as `self`,
+  so it is called with a colon: `value:area()`. Calling it with a dot is rejected with
+  `ErrInterfaceMethodNeedsColon`, because `.` would not pass the receiver.
+- **`function`** declares a plain function member, called with a dot: `value.describe()`. This
+  is how module-shaped declarations are written, such as the stdlib's `declare interface
+  StringLib` together with `declare string: StringLib`, whose members are called as
+  `string.upper(s)`.
+
+```nebra
+interface Shape
+    method area(): number
+    function describe(): string
+end
+
+local function report(shape: Shape): nil
+    print(shape:area())
+    print(shape.describe())
+end
+```
+
+In both cases the parameter list is the whole contract: `self` is never written in an
+interface signature. A class implements a `method` member with an ordinary instance method.
+`method` is a contextual keyword - it only has this meaning at the start of an interface
+member and stays usable as a name everywhere else.
 
 ## Defining an Interface
 
 ```nebra
 interface Printable
-    function toString(): string
+    method toString(): string
 end
 
 interface Drawable
-    function draw(): void
-    function hide(): void
+    method draw(): void
+    method hide(): void
     visible: boolean
 end
 ```
@@ -48,12 +58,12 @@ Interfaces can extend other interfaces:
 
 ```nebra
 interface Serializable
-    function toJson(): string
+    method toJson(): string
 end
 
 interface Storable extends Serializable
-    function save(): void
-    function load(): void
+    method save(): void
+    method load(): void
 end
 ```
 
@@ -97,8 +107,8 @@ end
 
 ```nebra
 export interface Plugin
-    function init(): void
-    function destroy(): void
+    method init(): void
+    method destroy(): void
     name: string
 end
 ```
@@ -113,9 +123,9 @@ automatically and only need to override it when they want different behavior. Me
 interface Greetable
     name: string
     -- abstract: every implementer must provide this
-    function fullName(): string
+    method fullName(): string
     -- default: implementers get this for free
-    function greet(): string
+    method greet(): string
         return "hi, I'm " .. self:fullName()
     end
 end
