@@ -28,7 +28,7 @@ class Weapon
     end
 end
 
-local info = reflect.get("game::Weapon")
+local info = reflect.get("main::Weapon")
 print(info.name)                 -- "Weapon"
 print(#info.fields)              -- 2
 print(info.fields[0].name)       -- "name"
@@ -88,12 +88,18 @@ Every registry entry is keyed by a stable id of the form:
 <module>::<Name>
 ```
 
-The module segment is your project's `name` (from `nebra.toml`) for the root
-package, and the directory leaf for each dependency - so a `Widget` class in
-an imported `widget` package is `widget::Widget`, distinct from a `Widget` in your
-own `game::Widget`. Ids are stable across files: a cross-module reference and the
-definition itself always produce the same id, so `reflect.get(id)` resolves a type
-no matter which file asked for it.
+The module segment is the module path of the file the declaration is written in: its
+path from the source directory, without the extension - the same path you import it by.
+A `Weapon` class in `src/main.neb` is `main::Weapon`, a `MainHUD` in
+`src/Client/Index.neb` is `Client/Index::MainHUD`, so the same name in two files never
+collides. A type from a dependency is named the way that dependency's own build names it:
+by its path from the dependency's source directory, which is also the module name its
+generated declarations carry. Ids are stable across files and builds: a cross-module
+reference and the definition itself always produce the same id, so `reflect.get(id)`
+resolves a type no matter which file asked for it.
+
+The editor completes ids inside `reflect.get("...")`, `reflect.ref("...")` and
+`reflect.implementorsOf("...")`, and the compiler warns about an id that names nothing.
 
 ---
 
@@ -135,7 +141,7 @@ value.
 ### `reflect.get(id)` - look up by id
 
 ```lua
-local info = reflect.get("game::Weapon")
+local info = reflect.get("main::Weapon")
 ```
 
 Returns the registry entry for the id, or `nil` if unknown (or reflection is off).
@@ -160,11 +166,11 @@ runtime object. `reflect.create` and `reflect.invoke` are convenience wrappers
 over it:
 
 ```lua
-local info = reflect.get("game::Weapon")
+local info = reflect.get("main::Weapon")
 local dagger = reflect.create(info, "Dagger", 7)   -- info.ref.new("Dagger", 7)
 print(dagger:attack("goblin"))                     -- 7
 
-local fn = reflect.get("game::greet")
+local fn = reflect.get("main::greet")
 print(reflect.invoke(fn, "world"))                 -- fn.ref("world") -> "hello world"
 ```
 
@@ -172,7 +178,7 @@ A variable's `ref` is a **getter closure** - call it to read the variable's
 current value:
 
 ```lua
-local v = reflect.get("game::player")
+local v = reflect.get("main::player")
 print(v.ref())   -- current value of `player`
 ```
 
@@ -181,7 +187,7 @@ print(v.ref())   -- current value of `player`
 Every class whose `interfaces` list contains the given interface id:
 
 ```lua
-for _, c in ipairs(reflect.implementorsOf("game::Usable")) do
+for _, c in ipairs(reflect.implementorsOf("main::Usable")) do
     print(c.name)   -- classes that `implements Usable`
 end
 ```
@@ -192,7 +198,7 @@ Annotations are compile-time, but Nebra preserves them in the registry in a
 simplified, runtime-readable form (`{ name, args }`):
 
 ```lua
-local info = reflect.get("game::Plugin")
+local info = reflect.get("main::Plugin")
 if reflect.hasAnnotation(info, "route") then
     local a = reflect.annotation(info, "route")
     print(a.args.path)                     -- named arg
@@ -269,19 +275,19 @@ print(reflect.Of(Weapon).kind)                     -- class
 print(reflect.Of(3.14).name)                       -- number
 print(reflect.typeOf(sword).name)                  -- Weapon
 
-local info = reflect.get("game::Weapon")
+local info = reflect.get("main::Weapon")
 print(#info.fields)                                -- 2
 
 local dagger = reflect.create(info, "Dagger", 7)
 print(dagger:attack("goblin"))                     -- 7
 
-print(reflect.invoke(reflect.get("game::greet"), "world"))  -- hello world
-print(reflect.get("game::player").ref())           -- hero
+print(reflect.invoke(reflect.get("main::greet"), "world"))  -- hello world
+print(reflect.get("main::player").ref())           -- hero
 
-local rarity = reflect.get("game::Rarity")
+local rarity = reflect.get("main::Rarity")
 print(#rarity.members, rarity.members[0].name)     -- 3   Common
 
-print(reflect.implementorsOf("game::Usable")[0].name)       -- Weapon
+print(reflect.implementorsOf("main::Usable")[0].name)       -- Weapon
 ```
 
 Iterating the whole program is just as direct:
