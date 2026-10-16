@@ -42,7 +42,7 @@ range matchers work.
 ### `target` (string, default `"5.4"`)
 
 Lua dialect the compiler emits. Recognised values: `"5.1"`, `"5.2"`,
-`"5.3"`, `"5.4"`, `"luajit"`. The target gates which built-in operators and
+`"5.3"`, `"5.4"`, `"jit"`. The target gates which built-in operators and
 library calls the codegen pass is allowed to use (e.g. integer division
 `//` requires 5.3+).
 
