@@ -82,7 +82,7 @@ class Config
     -- Static field (on the class table itself)
     static version: string = "1.0"
 
-    -- Local field (file-scoped, not on the class table)
+    -- Private field (on every instance, reachable only inside this class)
     local internalCounter: number = 0
 
     -- Protected field (on the class table, accessible in subclasses)
@@ -109,7 +109,7 @@ class Service
         return await httpGet(url)
     end
 
-    -- Local method (file-scoped helper, not on class)
+    -- Private method (reachable only inside this class)
     local function helper(): void
         print("internal")
     end
@@ -239,6 +239,34 @@ end
 ```
 
 Non-abstract subclasses **must** implement all abstract methods, or the compiler reports an error.
+
+## Private Members
+
+Fields and methods declared `local` are private: they live on the instance like any other
+member and are reached through `self`, but only the methods of the class declaring them may
+use them - not subclasses, and not code outside the class.
+
+```nebra
+class Counter
+    local count: number = 0
+
+    local function bump(by: number): number
+        self.count = self.count + by
+        return self.count
+    end
+
+    function add(by: number): number
+        return self:bump(by)          -- OK: inside Counter
+    end
+end
+
+local counter = new Counter()
+counter:add(2)                        -- OK
+counter:bump(2)                       -- error: 'bump' is private to Counter
+```
+
+Like protected members, private members are compiled as regular members; the restriction is
+checked at compile time only.
 
 ## Protected Members
 
