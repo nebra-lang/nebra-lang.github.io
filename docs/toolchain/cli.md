@@ -310,7 +310,7 @@ nebra pm refresh-registry
 
 ## `nebra publish`
 
-Publishes the project in the current directory to the [package registry](https://github.com/nebra-lang/pm-registry), so others can `nebra add` it. Run it from the root of a public GitHub repository; the repository is taken from its `origin` remote and its `nebra.toml` names the package. Versions are the repository's git tags, so publish once and tag releases as usual.
+Publishes the project in the current directory to the [package registry](https://github.com/nebra-lang/pm-registry), so others can `nebra add` it. Run it in a public GitHub repository, at its root or in the directory of one package of a monorepo; the repository is taken from its `origin` remote and the project's `nebra.toml` names the package. Versions are the repository's git tags, so publish once and tag releases as usual.
 
 | Flag                   | Description                                                       |
 |------------------------|-------------------------------------------------------------------|
@@ -322,7 +322,7 @@ nebra publish                      # @<your account>/<name>
 nebra publish --scope my-org       # @my-org/<name>
 ```
 
-The request is sent as an issue to the registry through your GitHub login (`gh auth login`, `GITHUB_TOKEN` or `GH_TOKEN`), and the command waits for its answer. Without a login it opens the prepared issue in your browser. A scope belongs to the GitHub accounts that own it: the first package published to `@name` claims it for the account or organization of that name, for an organization through a *public* membership.
+The request is sent as an issue to the registry through your GitHub login (`gh auth login`, `GITHUB_TOKEN` or `GH_TOKEN`), and the command waits for its answer. Without a login it opens the prepared issue in your browser. A scope belongs to the GitHub accounts that own it: the first package published to `@name` claims it for the account or organization of that name. For an organization, publish either as a *public* member, or from one of the organization's repositories whose `nebra.toml` names the package with the scope, such as `name = "@my-org/core"`; that works for private members as well.
 
 ## `nebra unpublish [<package>]`
 
