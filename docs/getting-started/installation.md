@@ -128,6 +128,18 @@ nebra upgrade   # download and install the latest release
 `nebra upgrade --force` reinstalls even when you are already on the newest version, which is useful if
 an install got corrupted.
 
+## Using a local build
+
+To try a compiler you built yourself, such as a checkout of the repository, point the installed `nebra` at it:
+
+```bash
+nebra use ~/src/nebra/compiler/bin/Debug/net10.0   # a directory, a nebra executable or a nebra.dll
+nebra use                                            # show which build is in use
+nebra unuse                                          # back to the installed version
+```
+
+Until `nebra unuse`, every call of `nebra` runs that build with the same arguments, including the language server your editor starts. `nebra upgrade` and `nebra check` keep working on the installed version.
+
 ## Uninstalling
 
 Delete the install directory and the symlink:
