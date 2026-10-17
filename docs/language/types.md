@@ -120,6 +120,60 @@ local tag, x, y = tagged()            -- tag: string, x/y: number
 A `...T` return may yield zero values, so - like `void` - it is exempt from the "must return a
 value" check. When captured by a single variable it collapses to `T`.
 
+## Generics
+
+Functions, methods, classes and interfaces can take type parameters:
+
+```nebra
+local function first<T>(items: T[]): T?
+    return items[0]
+end
+
+local function map<T, U>(items: T[], f: (T) -> U): U[]
+    local out: U[] = {}
+    for i, item in ipairs(items) do
+        out[i] = f(item)
+    end
+    return out
+end
+```
+
+A call fills in the type parameters from its arguments, through lists, maps, tuples, `?` and the signature of a callback, so its result has the specialized type:
+
+```nebra
+local name = first({ "a", "b" })              -- string?
+local lengths = map({ "a", "bb" }, function(s: string): number
+    return #s
+end)                                            -- number[]
+```
+
+When a type parameter is told by several arguments, it takes the wider of their types, or their union.
+
+A bound limits what a type parameter takes and gives it the members of the bound: `extends` names a class, `implements` one or more interfaces.
+
+```nebra
+local function describe<T implements Named>(value: T): string
+    return value:label()                        -- a method of Named
+end
+
+describe(new Tag())                             -- Tag implements Named
+describe(5)                                     -- error: 5 does not
+```
+
+A generic class is written `Box<T>` and used as `Box<number>`. Its type arguments are checked where they are written but erased afterwards: a `Box<number>` is a `Box` to the checker, so what its methods return is not specialized the way a generic function's result is.
+
+```nebra
+class Box<T>
+    value: T
+
+    constructor(value: T)
+        self.value = value
+    end
+end
+
+local box: Box<number> = new Box(1)
+```
+
 ## The `never` Type
 
 `never` is the bottom type: the type of an expression that produces no value because control flow
