@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: "Annotations"
-description: "Compile-time IR rewriting with builtin annotations and your own custom annotation definitions."
+description: "Compile-time IR rewriting with builtin annotations and your own annotation files."
 ---
 
 # Annotations
@@ -9,149 +9,199 @@ description: "Compile-time IR rewriting with builtin annotations and your own cu
 Annotations are compile-time metadata that can **rewrite the IR**. They are Nebra's answer to decorators (TypeScript / Python), attributes (C#), and macros (Rust): a way to attach behavior to declarations without changing the call sites.
 
 ```lua
-@deprecated("use Vec2 instead")
-function oldVec(x: number, y: number): { x: number, y: number }
-    return { x = x, y = y }
+@log("starting work")
+function work()
+    -- ...
 end
 ```
 
-When the compiler encounters `@deprecated`, it looks up the annotation's definition, hands it the target declaration as a serialized IR tree, and runs the annotation's logic in a sandboxed Lua interpreter. The annotation can mutate the declaration, emit warnings, replace it with a new node, or wrap it - whatever its implementation does.
+When the compiler meets `@log`, it looks up the annotation file named `log`, hands its `apply` function the declaration as a Lua table, and runs it in a sandboxed Lua interpreter. Whatever `apply` returns replaces the declaration before the rest of the compiler sees it.
 
 ---
 
-## Declaring an annotation
+## Writing an annotation
 
-An annotation is a regular Nebra function that uses the `@annotation` meta-annotation:
+An annotation is a `.neb` file of its own. The file name is the annotation's name, so `annotations/log.neb` defines `@log`. It exports two things: an `annotation` table describing where it may be used and which arguments it takes, and an `apply` function.
 
 ```lua
--- lib/deprecated.neb
-import { Diagnostic } from "nebra:ir"   -- IR helpers ship in the stdlib
+-- annotations/log.neb
+export local annotation = {
+    targets = { "Function", "ClassMethod" },
+    params = {
+        message = { type = "string", required = false }
+    }
+}
 
-@annotation(targets = [AnnotationTarget.Function, AnnotationTarget.Method])
-export function deprecated(target, args)
-    local message: string = args.message or "deprecated"
-    target.annotations.push({
-        kind = "warning",
-        text = "this " .. target.kind .. " is deprecated: " .. message,
-    })
-    return target  -- pass through unchanged; the warning shows on every call site
+export function apply(target, args)
+    local label = args.message or "called"
+    table.insert(target.body, 1, ir.exprStmt(ir.call("print", {
+        ir.stringLiteral("[log] " .. label)
+    })))
+    return target
 end
 ```
 
-The `targets` array names which declaration kinds this annotation is allowed to decorate - see `stdlib/annotation.d.neb` for the full enum (`Function`, `Method`, `Class`, `Interface`, `Field`, `Parameter`, `Variable`, ...).
+- `targets` lists the kinds of declaration the annotation may be written on (see [Targets](#targets)). A single kind can also be given as `target = "Function"`.
+- `params` declares the arguments by name. Each one has a `type` (`"string"`, `"number"`, `"boolean"` or `"any"`), may be `required`, and may have a `default`. Only constant literals are accepted as arguments.
+- `apply(target, args)` receives the declaration and the validated arguments.
 
----
-
-## How an annotation runs
-
-```
-@deprecated("use Vec2 instead") function oldVec(...) ... end
-        │
-        ▼
-[ResolveAnnotations pass]   Discover annotation source files (via [annotations] in nebra.toml)
-        │                    Parse them, register exported `@annotation`-marked functions
-        ▼
-[ApplyAnnotations pass]      For each annotated declaration:
-                              1. Serialize the target IR node to a Lua table tree
-                              2. Spin up a sandboxed NebraRuntime
-                              3. Push the table + the annotation arguments
-                              4. Call the annotation function
-                              5. Deserialize the return value back into IR
-                              6. Replace the original declaration in-place
-```
-
-The sandboxed runtime has access to:
-- Standard Lua (`string`, `table`, `math`, `pcall`, ...)
-- The `ir` helper module (loaded as a global; from `runtime/ir_helpers.lua`)
-
-It does **not** have access to: `io`, `os`, `package`, `require`, `load`, `dofile`, `debug`. Annotations cannot read your filesystem, fetch URLs, or escape the compile.
-
-> **Important note**: Annotations run under a specific configuration which e.g. has its index base back to normal Lua behavior (1-based) regardless of the project's configured.
+Annotation files are compiled with a 1-based index, whatever `index_base` the project uses, and imports are emitted as plain `require` calls.
 
 ---
 
 ## Registering annotation files
 
-Tell the compiler where annotation definitions live:
+Tell the compiler where your annotations live:
 
 ```toml
 # nebra.toml
 annotations = [
-    "lib/annotations",          # directory: every .neb in here is scanned
-    "lib/special.neb",          # individual file
+    "annotations",          # directory
+    "lib/special.neb",      # a single file
 ]
 ```
 
-Every exported function with an `@annotation(...)` meta-annotation becomes available project-wide.
+In a directory, every file that exports an `annotation` table or an `apply` function is an annotation. Any other `.neb` file next to them is a helper module the annotations can import.
+
+Installed dependencies contribute their annotations automatically.
 
 ---
 
-## Annotation arguments
+## Helper modules
 
-Call syntax mirrors function calls. Positional and named arguments both work:
+An annotation file can import other `.neb` files, so annotations can share code:
 
 ```lua
-@deprecated("use Vec2")              -- positional
-@deprecated(message = "use Vec2")    -- named
-@stable                               -- no args
-@route(path = "/health", method = "GET")
+-- annotations/util/naming.neb
+export function toSnakeCase(name: string): string
+    return string.lower((string.gsub(name, "(%l)(%u)", "%1_%2")))
+end
 ```
 
-In the annotation handler, `args` is a `Dictionary<string, any>` - positional values are bound by parameter order from the annotation function's declared signature, so the handler can write `args.message` regardless of call style.
+```lua
+-- annotations/Table.neb
+import { toSnakeCase } from "./util/naming"
+
+export local annotation = { targets = { "Class" } }
+
+export function apply(target, args)
+    -- ...
+end
+```
+
+The imported modules are compiled together with the annotation and bundled into its sandbox. They run in the same annotation environment, so they can use `ir` as well.
+
+---
+
+## Arguments
+
+Positional and named arguments both work:
+
+```lua
+@log("work")              -- positional, bound in the order of `params`
+@log(message = "work")    -- named
+@log                       -- no arguments
+```
+
+`args` is a table keyed by parameter name, with defaults filled in, so the handler reads `args.message` however the annotation was written.
 
 ---
 
 ## Targets
 
-Annotations attach to specific kinds of declarations. The `targets` array in `@annotation` is a whitelist - using `@deprecated` on a class when the annotation only declared `targets = [Function]` is an error.
+| Target             | Applies to                          |
+|--------------------|-------------------------------------|
+| `Function`         | Global functions                    |
+| `LocalFunction`    | `local function` declarations       |
+| `Variable`         | `local` declarations                |
+| `Parameter`        | Function parameters                 |
+| `Enum`             | `enum` declarations                 |
+| `EnumMember`       | Members of an enum                  |
+| `Class`            | `class` declarations                |
+| `ClassMethod`      | Methods of a class                  |
+| `ClassField`       | Fields of a class                   |
+| `ClassConstructor` | The constructor of a class          |
+| `ClassAccessor`    | Getters and setters of a class      |
+| `Interface`        | `interface` declarations            |
+| `InterfaceMethod`  | Methods of an interface             |
+| `InterfaceField`   | Fields of an interface              |
+| `Extend`           | `extend` blocks                     |
+| `ExtensionMethod`  | Methods of an `extend` block        |
 
-| Target enum value         | Applies to                                  |
-|---------------------------|---------------------------------------------|
-| `Function`                | Top-level `function` / `local function`     |
-| `Method`                  | Class methods                               |
-| `Class`                   | `class` declarations                        |
-| `Interface`               | `interface` declarations                    |
-| `Field`                   | Class instance fields                       |
-| `StaticField`             | Class `static` fields                       |
-| `Property`                | Getter / setter accessors                   |
-| `Variable`                | `local` / `local mut` declarations          |
-| `Parameter`               | Function parameters                         |
-| `Module`                  | `declare module "..."` blocks                |
-| `Enum`                    | `enum` declarations                         |
-| `EnumMember`              | Individual enum members                     |
+Using an annotation on a kind it does not list is an error.
 
 ---
 
-## Built-in annotations
+## What `apply` receives
 
-A few annotations ship with the stdlib:
+The target is the declaration's IR as a Lua table. `__kind` names the node type (such as `"FunctionDecl"` or `"ClassDecl"`), and every property of the node is a camelCased field: a class has `fields`, `methods` and `annotations`, a field has `name`, `typeAnnotation` and `defaultValue`, a name is `{ name = "...", span = ... }`.
 
-- `@deprecated(message?)` - mark a symbol as deprecated; emits a compile-time warning at every call site.
-- `@inline` - hint that a function should be inlined when called (codegen heuristic; not guaranteed).
-- `@pure` - declare that a function has no side effects; enables more aggressive dead-code-elimination of unused return values.
-- `@experimental` - emit a one-time warning per file that references the symbol.
+Annotations run before names and types are resolved. A type written by name, such as `Json<any>` or `DateTime`, therefore arrives with `kind = "Named"`: whether it is a class, an interface or an enum is not known yet.
 
-The full list lives in `stdlib/annotation.d.neb`.
+A declaration's own annotations run before those of its members. A class annotation sees its fields and methods as they are written, including their annotations:
 
-### Compiler builtins
+```lua
+export function apply(target, args)
+    for _, field in ipairs(target.fields) do
+        for _, marker in ipairs(field.annotations or {}) do
+            if marker.name.name == "Column" then
+                -- ...
+            end
+        end
+    end
+    return target
+end
+```
 
-A separate, smaller set of annotations is recognised directly by the
-compiler - they don't go through the user-script annotation pipeline,
-can't be redefined or rewritten, and don't need an `[annotations]` entry in
-`nebra.toml`. They mutate compile-time behaviour rather than IR.
+The member annotations then run on whatever the class annotation returned.
 
-- `@side(client | server | shared)` - multiplayer-sandbox execution-side
-  scoping for declarations. See [Sides](./sides.md) for the full mental
-  model.
-- `@overrideCtor("template")` - overrides how `new ClassName(args)`
-  lowers to Lua. Applied to a `class` (or `declare class`) decl. The
-  template is a format string with two placeholders:
+---
+
+## What `apply` returns
+
+- The target itself, changed or not: it replaces the declaration.
+- A list of statements: they replace the declaration, so an annotation can add code before or after it. When further annotations follow on the same declaration, the list has to contain a declaration of the same kind for them to run on.
+
+---
+
+## The `ir` helpers
+
+The global `ir` builds new nodes without bookkeeping node ids:
+
+| Helper | Builds |
+|---|---|
+| `ir.stringLiteral(value)`, `ir.numberLiteral(raw)`, `ir.boolLiteral(value)`, `ir.nilLiteral()` | Literals |
+| `ir.nameExpr(name)` | A reference to a name |
+| `ir.call(callee, args)` | A call; `callee` is a node or a name |
+| `ir.methodCall(object, method, args)` | `object:method(args)` |
+| `ir.dotAccess(object, field)` | `object.field` |
+| `ir.newExpr(className, args)` | `new ClassName(args)` |
+| `ir.table(fields)` | A table constructor; each entry is a bare node (positional), `{ key = "name", value = node }` or `{ key = node, value = node }` |
+| `ir.localDecl(name, value)` | `local name = value` |
+| `ir.exprStmt(expr)`, `ir.returnStmt(values)` | Statements |
+| `ir.param(name, opts)`, `ir.functionDef(params, body, returnStmt)` | Parameters and anonymous functions |
+| `ir.varargExpr()`, `ir.varargMethodCallClosure(object, method)` | `...` and a closure forwarding it |
+| `ir.annotation(name, args)` | An annotation, such as a marker for another annotation or for reflection |
+
+---
+
+## The sandbox
+
+An annotation runs with standard Lua (`string`, `table`, `math`, `pcall`, ...), the `ir` helpers, and `require` for the helper modules it imports. It has no `io`, `os`, `package`, `load`, `dofile` or `debug`: annotations cannot read your filesystem, fetch URLs, or escape the compile.
+
+---
+
+## Compiler builtins
+
+A small set of annotations is recognised directly by the compiler. They don't go through annotation files, can't be redefined, and don't need an `annotations` entry in `nebra.toml`. They change compile-time behaviour rather than IR.
+
+- `@side(client | server | shared)` - multiplayer-sandbox execution-side scoping for declarations. See [Sides](./sides.md) for the full mental model.
+- `@reflectable` - records a declaration for [reflection](./reflection.md) under `mode = "annotated"`.
+- `@overrideCtor("template")` - overrides how `new ClassName(args)` lowers to Lua. Applied to a `class` (or `declare class`) decl. The template is a format string with two placeholders:
     - `$class` - the resolved class identifier
     - `$args` - the comma-separated rendered arguments
 
-  Example: nanos-world exposes every class as a global call
-  (`Player(args)`, not `Player.new(args)`). The `nanos-world-types` package
-  emits `@overrideCtor("$class($args)")` on every class so:
+  Example: nanos-world exposes every class as a global call (`Player(args)`, not `Player.new(args)`). The `nanos-world-types` package emits `@overrideCtor("$class($args)")` on every class so:
 
   ```lua
   -- source
@@ -160,36 +210,7 @@ can't be redefined or rewritten, and don't need an `[annotations]` entry in
   local p = Player()
   ```
 
-  When the template has no `$args` placeholder, the compiler appends a
-  default `(args)` call so the arguments are never silently dropped.
-
----
-
-## Writing a non-trivial annotation
-
-Here's `@memoize` - wraps a function so it caches results by argument tuple:
-
-```lua
--- lib/memoize.neb
-@annotation(targets = [AnnotationTarget.Function])
-export function memoize(target, _args)
-    local original = target.body
-    local cacheVar = ir.newName("__memo_" .. target.name)
-    target.body = ir.block({
-        ir.localDecl(cacheVar, ir.table({})),
-        ir.functionDecl(target.name, target.params, ir.block({
-            -- if cache[k] ~= nil then return cache[k] end
-            -- local v = (original)(...)
-            -- cache[k] = v
-            -- return v
-            ...
-        }))
-    })
-    return target
-end
-```
-
-The `ir` helper module exposes constructors for every node kind (statements, expressions, declarations) so annotations can build syntax trees ergonomically without bookkeeping NodeIDs.
+  When the template has no `$args` placeholder, the compiler appends a default `(args)` call so the arguments are never silently dropped.
 
 ---
 
@@ -199,6 +220,6 @@ Annotations are powerful and run at compile time, which makes them tempting. Don
 
 - A plain function would do (e.g. `validate(myValue)` instead of `@validate myValue`).
 - The behavior depends on runtime state - annotations only see compile-time IR.
-- You need it just to suppress a warning - use the relevant `[rules]` knob or `--allow-X` instead.
+- You need it just to suppress a warning - use the relevant `[rules]` knob instead.
 
-Annotations are best for: deprecation tracking, performance hints, registering symbols (e.g. routes, event handlers), generating boilerplate, runtime type guards.
+Annotations are best for: registering symbols (routes, event handlers, entities), generating boilerplate, and runtime type guards.
