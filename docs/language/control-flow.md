@@ -60,6 +60,29 @@ end
 
 The compiler performs iteration type checking: when iterating over typed collections, loop variables are inferred. Enums are also iterable.
 
+A value whose class has an `iterator()` method is iterated through it: `for i, item in collection do` runs over what `collection:iterator()` returns. When `iterator()` declares the function it returns, the loop variables get that function's result types:
+
+```nebra
+class Collection<T>
+    items: T[] = {}
+
+    function iterator(): () -> (number?, T)
+        local index = 0
+        return function(): (number?, T)
+            index = index + 1
+            if index > #self.items then
+                return nil, nil!
+            end
+            return index, self.items[index]
+        end
+    end
+end
+
+for i, item in collection do  -- item is a T
+    print(i, item)
+end
+```
+
 ## Do Block
 
 Creates a new scope:

@@ -55,6 +55,30 @@ Runs the module without binding any names:
 import "polyfill"
 ```
 
+### Type Import
+
+Brings in names that are only used as types. Nothing is loaded at runtime, so two modules may import each other's types, which a regular import rejects as a cycle:
+
+```nebra
+-- User.neb
+import type { House } from "./House"
+
+export class User
+    houses: House[] = {}
+end
+```
+
+```nebra
+-- House.neb
+import type { User } from "./User"
+
+export class House
+    owner: User? = nil
+end
+```
+
+Using a type-imported name as a value, as in `new House()`, is an error; import it without `type` there.
+
 ## Exporting
 
 ### Export Function
