@@ -195,6 +195,7 @@ alt_boolean_operators = true   # default true
 semicolons = "optional"        # default "optional"
 import_statement = "require(%s)"  # default "require(%s)"
 import_extension = ""          # default ""
+import_path = "relative"       # default "relative"
 strip_unused = true            # default true
 ```
 
@@ -225,6 +226,14 @@ strip_unused = true            # default true
   meaningful in the lowered Lua. Set this to `".lua"` for runtimes whose
   loader requires it (e.g. nanos-world: `Package.Require("Foo.lua")`).
   Default empty.
+- **`import_path`** - how imports of the project's own modules are
+  written. `"relative"` keeps the path as the source writes it, such as
+  `../types/Calendar`. `"root"` writes the module's normalized path from
+  the output root, such as `Server/types/Calendar`, so every importer names
+  a module the same way. Use it for loaders that cache modules under the
+  path they are given without resolving it, as nanos world does; there a
+  relative path loads one module once per spelling. Modules of packages and
+  declarations keep the path as written.
 - **`strip_unused`** - remove unreferenced locals / functions /
   imports from the generated Lua. Off for friendlier debug output;
   default on for smaller bundles.
