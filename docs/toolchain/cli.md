@@ -283,7 +283,7 @@ nebra pm prune                                        # wipe ALL caches
 nebra pm prune github:nebra-lang/nanos-world-types        # wipe one repo's bare clone + snapshots
 ```
 
-`nebra pm prune` (no args) removes `~/.neb/cache/git`, `~/.neb/store` and `~/.neb/tmp`. With a git spec it removes only that repo's bare clone and every commit snapshot of it.
+`nebra pm prune` (no args) removes `~/.nebra/cache/git`, `~/.nebra/store` and `~/.nebra/tmp`. With a git spec it removes only that repo's bare clone and every commit snapshot of it.
 
 ## `nebra pm update [<name>]`
 
@@ -298,7 +298,7 @@ nebra pm update nanos-world-types        # re-resolve just one
 
 ## `nebra pm refresh-registry`
 
-Re-downloads the alias registry index so name → git-URL lookups (`nebra add cool-lib@v1`) see the latest published packages.
+Re-downloads the [package registry](./package-manager.md#the-package-registry)'s index so name lookups (`nebra add @scope/name`) see the latest published packages. The index is otherwise cached for a day.
 
 ```bash
 nebra pm refresh-registry

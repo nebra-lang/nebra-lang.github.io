@@ -6,7 +6,7 @@ description: "Dependency specs, the install pipeline, the registry, lockfiles an
 
 # Package Manager
 
-Nebra ships with a built-in package manager modeled after npm / cargo, with git as the source of truth. Dependencies are declared in `nebra.toml`, fetched from git, and linked into a local `nebra_modules/` folder. There is no central registry server - just an optional **alias registry** (a JSON file in this repo) that maps short names to git URLs.
+Nebra ships with a built-in package manager modeled after npm / cargo, with git as the source of truth. Dependencies are declared in `nebra.toml`, fetched from git, and linked into a local `nebra_modules/` folder. The [package registry](#the-package-registry) maps names such as `@nebra-lang/nanos-world` to git repositories, so packages can be added by name; there is no package server, the registry is a GitHub repository and every version is a git tag.
 
 ---
 
@@ -16,7 +16,10 @@ Nebra ships with a built-in package manager modeled after npm / cargo, with git 
 
 ```toml
 [dependencies]
-# String spec
+# From the registry, by name
+nanos-world-types = "@nebra-lang/nanos-world@^1"
+
+# Straight from git
 nebra-strings = "github:DasDarki/nebra-strings@v1.2.0"
 
 # Inline table - same fields as a [packages.<name>] block
@@ -40,7 +43,9 @@ nebra-core = ">=1.0.0"
 
 | Format                                | Resolves to                                          |
 |---------------------------------------|------------------------------------------------------|
-| `name@version`                         | Registry alias → git URL + ref `vX.Y.Z`             |
+| `@scope/name`                          | A package of the registry, its default branch        |
+| `@scope/name@^1`                       | A package of the registry at a tag or version range  |
+| `name[@range]`                         | An unscoped name the registry still knows, such as `nanos-world` |
 | `github:owner/repo`                    | `https://github.com/owner/repo.git`                  |
 | `github:owner/repo@v1`                 | `https://github.com/owner/repo.git#v1`               |
 | `github:owner/repo/sub/dir@v1`         | One package inside a monorepo (sparse-checked subdir)|
@@ -79,8 +84,9 @@ added multiple times pointing at different subdirectories.
 ## Adding / removing
 
 ```bash
+nebra add @nebra-lang/nanos-world
 nebra add github:DasDarki/nebra-strings@v1.2.0
-nebra add lua-math@0.5.0 --dev
+nebra add github:owner/lua-math@v0.5.0 --dev
 nebra remove lua-math
 ```
 
@@ -94,9 +100,9 @@ After mutation, the installer runs - you get the new package in `nebra_modules/`
 
 `nebra install` (or `nebra add`'s implicit install) runs five stages:
 
-1. **Resolve** - every spec is normalized into a `(name, gitUrl, ref)` triple. Registry aliases are looked up against the alias registry (cached at `~/.neb/registry/index.json`, refresh with `nebra registry refresh`).
-2. **Fetch** - each unique `(gitUrl, ref)` is fetched into a bare-clone cache at `~/.neb/cache/git/<hash>/`. Subsequent fetches reuse the cache. Use `--no-cache` to force a fresh clone.
-3. **Materialize** - each package is checked out into the **store** at `~/.neb/store/<name>@<resolved-ref>/`.
+1. **Resolve** - every spec is normalized into a `(name, gitUrl, ref)` triple. Registry names are looked up in the registry's index (cached for a day at `~/.nebra/cache/registry/index.json`, refresh with `nebra pm refresh-registry`).
+2. **Fetch** - each unique `(gitUrl, ref)` is fetched into a bare-clone cache under `~/.nebra/cache/git/`. Subsequent fetches reuse the cache. Use `--no-cache` to force a fresh clone.
+3. **Materialize** - each package is checked out into the **store** at `~/.nebra/store/<host>/<owner>/<repo>/<commit>/`, shared by every project.
 4. **Link** - the store directory is linked into `<project>/nebra_modules/<name>/`. On Linux/macOS this is a symlink; on Windows it's a junction (or a copy on filesystems that don't support junctions).
 5. **Transitive resolve** - the freshly installed package's own `nebra.toml` is read; its `[dependencies]` are processed the same way. Versions are de-duplicated by `(name, resolved-ref)`.
 
@@ -130,23 +136,6 @@ integrity = "sha256-..."
 name = "lua-math"
 git = "file:/path/to/lua-math"
 ```
-
----
-
-## Conflict resolution + name aliases
-
-When two packages depend on the same name at incompatible refs, the **alias registry** is consulted. If the registry has a canonical entry for the conflicting name, the dependency tree may be rewritten to use `@scope/name` form to disambiguate:
-
-```toml
-# Original
-nebra-fancy = "github:fork-a/nebra-fancy@v2.0.0"
-# But a transitive dep wants github:fork-b/nebra-fancy@v1 - registry maps both to a scope:
-# Nebra rewrites:
-"@a/nebra-fancy" = "github:fork-a/nebra-fancy@v2.0.0"
-"@b/nebra-fancy" = "github:fork-b/nebra-fancy@v1.0.0"
-```
-
-If no scope mapping exists, the install fails with a clear message and a suggestion to manually use `@scope/name` syntax.
 
 ---
 
@@ -185,16 +174,34 @@ This mirrors npm's `--ignore-scripts` default-flipped to safe-by-default. Truste
 
 ---
 
-## Publishing your own package
+## The package registry
 
-There is no central package server. To publish a Nebra library, just push a git repo:
+The registry is the GitHub repository [`nebra-lang/pm-registry`](https://github.com/nebra-lang/pm-registry). It maps scoped names to public repositories; the versions are those repositories' git tags, so a package is published once and released by tagging.
 
-1. Have a `nebra.toml` at the root with `name`, `version`, optional `[dependencies]`.
+### Publishing your own package
+
+1. Have a `nebra.toml` with a `name` in a public GitHub repository, at its root or in a directory of a monorepo.
 2. Either ship `.neb` sources (run through the consumer's compiler) or pre-built `.lua` + `.d.neb` (faster install, no consumer needs to recompile yours).
-3. Tag releases as `vX.Y.Z`.
-4. Users add it with `nebra add github:you/your-lib@vX.Y.Z`.
+3. Log in once and publish:
 
-If you want a friendly short name, open a PR against the alias registry to map `your-lib` to `github:you/your-lib`. After that, users can `nebra add your-lib@1.2.0` without typing the org.
+```bash
+nebra login                          # GitHub device flow in the browser
+nebra publish --description "..."    # as @<your account>/<name>
+```
+
+4. Tag releases as `vX.Y.Z`. Users add the package with `nebra add @you/your-lib@^1`.
+
+`nebra publish` sends the request as an issue to the registry, signed by your GitHub login, and prints the answer of the workflow that carries it out. Without a login it opens the prepared issue in your browser. Packages can also be added straight from git without the registry: `nebra add github:you/your-lib@v1.2.0`.
+
+### Scopes
+
+Every package lives in a scope, `@scope/name`, and a scope belongs to GitHub accounts:
+
+- **Your account's scope**, `@<your login>`, is claimed by the first package you publish to it.
+- **An organization's scope** is used by its *public* members, or from one of the organization's repositories whose `nebra.toml` names the package with the scope, such as `name = "@my-org/core"`. Only those who can write to the organization's repositories can do that, so it works for private members too.
+- Owners can let other accounts in: `nebra scope add-owner my-org alice`.
+
+`nebra unpublish` removes a package again. Older unscoped names such as `nanos-world` keep working and resolve to their scoped package.
 
 ---
 
@@ -202,10 +209,11 @@ If you want a friendly short name, open a PR against the alias registry to map `
 
 | Path                                  | Purpose                                              |
 |---------------------------------------|------------------------------------------------------|
-| `~/.neb/cache/git/<hash>/`            | Bare-clone cache, deduplicated per git URL           |
-| `~/.neb/store/<name>@<ref>/`          | Materialized checkout, shared across projects        |
-| `~/.neb/registry/index.json`          | Alias registry cache (refreshed by `nebra registry refresh`) |
+| `~/.nebra/cache/git/`                 | Bare-clone cache, deduplicated per git URL           |
+| `~/.nebra/store/<host>/<owner>/<repo>/<commit>/` | Materialized checkout, shared across projects |
+| `~/.nebra/cache/registry/index.json`  | Registry index cache (refreshed by `nebra pm refresh-registry`) |
+| `~/.nebra/credentials.json`           | The GitHub login of `nebra login`, readable only by you |
 | `<project>/nebra_modules/<name>/`       | Link to the store; what the compiler reads from      |
 | `<project>/nebra.lock`                  | Pinned resolution; commit this                       |
 
-Delete `~/.neb/cache/` to fully reset the fetch cache; `~/.neb/store/` to also reset materialized checkouts.
+`nebra pm prune` resets the caches and the store; `NEBRA_HOME` moves `~/.nebra` elsewhere.
