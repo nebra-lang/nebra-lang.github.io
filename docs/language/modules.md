@@ -137,6 +137,15 @@ export interface Handler
 end
 ```
 
+### Re-export
+
+Exports names of another module as names of this one, optionally renamed, so one module can gather a package's public parts:
+
+```nebra
+export { Model, Collection } from "./orm/Model"
+export { Uuid as Id } from "./types/Uuid"
+```
+
 ## Module Return
 
 Exports compile to a return table at the end of the file:
@@ -151,6 +160,35 @@ return {
     calculate = calculate
 }
 ```
+
+## Packages loaded through a global
+
+Some runtimes cannot load the files of another package; nanos world is one. A package for such a runtime sets [`runtime_global`](../advanced/configuration.md#runtime_global-string-optional) in its `nebra.toml`, and its root module `init.neb` re-exports everything it offers:
+
+```toml
+# nanos-orm/nebra.toml
+runtime_global = "NanosORM"
+runtime_export = "Package.Export(%name, %value)"
+```
+
+```nebra
+-- nanos-orm/src/init.neb
+export { Model } from "./model/Model"
+export { Collection } from "./orm/Collection"
+```
+
+The root module then ends by setting the global to its exports. The package's entry has to load it, such as with `import "./init"`. A project depending on the package imports from it as usual, and the import reads the global:
+
+```nebra
+import { Model } from "nanos-orm"
+import type { Uuid } from "nanos-orm/types/Uuid"
+
+class User extends Model
+    key: Uuid
+end
+```
+
+Values come only from the package itself, `"nanos-orm"`; its other modules can still be imported with `import type`. When the package is not loaded when the project starts, the import fails with the package's name.
 
 ## Import Path Resolution
 

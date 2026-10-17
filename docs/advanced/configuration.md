@@ -132,6 +132,20 @@ Marks the project as a *types-only* package - it ships only
 `run` and `test` become graceful no-ops; `nebra docs` still works. Use this
 for type-shim packages (the moral equivalent of TypeScript's `@types/*`).
 
+### `runtime_global` (string, optional)
+
+The global this package is reachable as at runtime, for runtimes where one package cannot load the files of another, such as nanos world. The package's root module, `init.neb` in its source directory, sets the global from its exports, and a project that depends on the package reads it instead of loading files:
+
+```nebra
+import { Model, Collection } from "nanos-orm"   -- local _mod0 = NanosORM or error(...)
+```
+
+Values can only be imported from the package itself, since the global holds its root module; `import type` still reaches any module of the package. See [Packages loaded through a global](../language/modules.md#packages-loaded-through-a-global).
+
+### `runtime_export` (string, default `"_G[%name] = %value"`)
+
+How the root module sets `runtime_global`. `%name` stands for the quoted global name and `%value` for the exports. nanos world packages use `"Package.Export(%name, %value)"`.
+
 ### `assets` (table, optional)
 
 Files copied verbatim into the output directory. Keys are paths relative
