@@ -192,6 +192,19 @@ end
 
 If you define a method that exists in a parent without `override`, the compiler emits a **warning** about shadowing. If you use `override` but no matching parent method exists, it's an **error**.
 
+An override reaches the method it overrides with `super:method(args)`, which calls the base class's version on the same instance:
+
+```nebra
+class User extends Model
+    override function onPrePersist(): nil
+        super:onPrePersist()      -- the base class sets its timestamps
+        self.name = string.lower(self.name)
+    end
+end
+```
+
+It compiles to `Model.onPrePersist(self)`, works with `await` and is only available in a method of a class that extends another.
+
 ## Abstract Classes
 
 Abstract classes cannot be instantiated directly. They may contain abstract methods (signature only, no body):
