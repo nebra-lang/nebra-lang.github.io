@@ -241,7 +241,8 @@ Adds a dependency to `nebra.toml` (preserving formatting + comments via TOML rou
 
 Spec formats:
 
-- `name@version` (alias registry): `nebra-strings@1.2.0`
+- `@scope/name[@range]` (package registry): `@nebra-lang/nanos-world@^1`
+- `name[@range]`: an unscoped name the registry still knows, such as `nanos-world`
 - `github:owner/repo[@ref]`: `github:DasDarki/nebra-strings@v1.2.0`
 - `gh:owner/repo[@ref]`: shorthand for the above
 - `https://...`: any git URL, optional `#ref` suffix
@@ -255,8 +256,9 @@ Spec formats:
 | `--allow-scripts[=names]`                   | Allow lifecycle scripts (all, or comma-separated names)    |
 
 ```bash
+nebra add @nebra-lang/nanos-world
 nebra add github:owner/cool-lib@v1
-nebra add nebra-strings@1.2.0 --dev
+nebra add @someone/test-utils@^1 --dev
 nebra add file:../my-utils
 ```
 
@@ -303,6 +305,41 @@ nebra pm refresh-registry
 ```
 
 `nebra registry refresh` still works as a deprecated alias and prints a one-line migration notice.
+
+---
+
+## `nebra publish`
+
+Publishes the project in the current directory to the [package registry](https://github.com/nebra-lang/pm-registry), so others can `nebra add` it. Run it from the root of a public GitHub repository; the repository is taken from its `origin` remote and its `nebra.toml` names the package. Versions are the repository's git tags, so publish once and tag releases as usual.
+
+| Flag                   | Description                                                       |
+|------------------------|-------------------------------------------------------------------|
+| `--scope <scope>`      | Publish as `@<scope>/<name>`; default is your GitHub account      |
+| `--description <text>` | A short description shown with the package                        |
+
+```bash
+nebra publish                      # @<your account>/<name>
+nebra publish --scope my-org       # @my-org/<name>
+```
+
+The request is sent as an issue to the registry through your GitHub login (`gh auth login`, `GITHUB_TOKEN` or `GH_TOKEN`), and the command waits for its answer. Without a login it opens the prepared issue in your browser. A scope belongs to the GitHub accounts that own it: the first package published to `@name` claims it for the account or organization of that name, for an organization through a *public* membership.
+
+## `nebra unpublish [<package>]`
+
+Removes a package from the registry, by default the current project's.
+
+```bash
+nebra unpublish
+nebra unpublish @my-org/old-lib
+```
+
+## `nebra scope add-owner|remove-owner <scope> <user>`
+
+Lets another GitHub account publish to one of your scopes, or takes that right away. A scope keeps at least one owner.
+
+```bash
+nebra scope add-owner my-org alice
+```
 
 ---
 
