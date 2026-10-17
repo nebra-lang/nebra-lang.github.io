@@ -83,6 +83,8 @@ for i, item in collection do  -- item is a T
 end
 ```
 
+When the value's type is not known, such as `any`, the loop asks at runtime: a table with an `iterator` method is iterated through it, anything else, such as an iterator function, is used as it is. Calls such as `pairs(t)` are always used as they are.
+
 ## Do Block
 
 Creates a new scope:
