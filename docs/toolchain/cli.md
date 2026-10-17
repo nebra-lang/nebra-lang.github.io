@@ -40,6 +40,8 @@ Scaffolds a project from a template. The spec can be:
 - A git URL: `https://github.com/owner/template.git`, `git@github.com:owner/template.git`
 - A GitHub shortcut: `gh:owner/template`, `github:owner/template@v1`
 - A direct URL to a `setup.neb` file that handles prompting and file generation
+- A local `setup.neb` or `setup.lua`, such as one you are writing, run as a downloaded one would be
+- A local template directory, copied or set up through its own `setup.neb` / `setup.lua`
 
 | Flag           | Description                                              |
 |----------------|----------------------------------------------------------|
@@ -50,6 +52,7 @@ Scaffolds a project from a template. The spec can be:
 ```bash
 nebra create gh:DasDarki/nebra-app-template my-game
 nebra create https://example.com/setup.neb
+nebra create ../my-templates/setup.lua my-game
 ```
 
 ---
@@ -312,6 +315,17 @@ nebra lps          # blocks reading from stdin / writing to stdout
 ```
 
 The server provides diagnostics, hover, go-to-definition, completion, signature help, rename, find-references, document symbols, semantic tokens, and code actions ("Implement interface", "Auto-import", "Compile current file"). It reuses the compiler's `CheckPipeline` (full pipeline minus mangle/codegen) for fast incremental feedback.
+
+---
+
+## `nebra use [path]` / `nebra unuse`
+
+Forwards every call of `nebra` to another build, such as a local checkout of the compiler, until `nebra unuse`. The path may be a `nebra` executable, a `nebra.dll` or the directory a build put them in. `nebra use` without a path shows which build is in use. The language server your editor starts goes through it as well; `nebra upgrade` and `nebra check` always act on the installed version.
+
+```bash
+nebra use ~/src/nebra/compiler/bin/Debug/net10.0
+nebra unuse
+```
 
 ---
 
