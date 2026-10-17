@@ -104,6 +104,39 @@ while true do
 end
 ```
 
+## Defer
+
+`defer` schedules a call for when the enclosing function exits, however it exits: at its end, through any `return`, or because it raises an error. It works like Go's `defer`:
+
+```nebra
+local function save(path: string): nil
+    local file = open(path)
+    defer file:close()          -- runs when save exits, even if write raises
+
+    file:write(serialize())
+end
+```
+
+- The function and its arguments are evaluated where the `defer` stands; the call runs later. `defer print(x)` prints `x` as it was then.
+- Several defers run in reverse order, the last one first.
+- A `defer` in a loop schedules one call per pass.
+- A function's return values are computed first, then its defers run.
+- When the function raises an error, its defers run and the error is raised again unchanged.
+
+A block defers several statements. It is a closure, so it sees its variables as they are when it runs:
+
+```nebra
+local function measure(): nil
+    local started = os.clock()
+    defer do
+        print("took", os.clock() - started)
+    end
+    work()
+end
+```
+
+`defer` can be used in functions and methods, not at the top level of a module or in a constructor. On the Lua 5.1 target it cannot be used in an `async` function.
+
 ## Labels & Goto
 
 ```nebra
