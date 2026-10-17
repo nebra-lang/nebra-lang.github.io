@@ -322,7 +322,7 @@ nebra publish                      # @<your account>/<name>
 nebra publish --scope my-org       # @my-org/<name>
 ```
 
-The request is sent as an issue to the registry through your GitHub login (`gh auth login`, `GITHUB_TOKEN` or `GH_TOKEN`), and the command waits for its answer. Without a login it opens the prepared issue in your browser. A scope belongs to the GitHub accounts that own it: the first package published to `@name` claims it for the account or organization of that name. For an organization, publish either as a *public* member, or from one of the organization's repositories whose `nebra.toml` names the package with the scope, such as `name = "@my-org/core"`; that works for private members as well.
+The request is sent as an issue to the registry through your GitHub login, and the command waits for its answer. The login is the first of: `GITHUB_TOKEN` or `GH_TOKEN`, [`nebra login`](#nebra-login--logout--whoami), the GitHub CLI's `gh auth login`. Without one it opens the prepared issue in your browser. A scope belongs to the GitHub accounts that own it: the first package published to `@name` claims it for the account or organization of that name. For an organization, publish either as a *public* member, or from one of the organization's repositories whose `nebra.toml` names the package with the scope, such as `name = "@my-org/core"`; that works for private members as well.
 
 ## `nebra unpublish [<package>]`
 
@@ -331,6 +331,16 @@ Removes a package from the registry, by default the current project's.
 ```bash
 nebra unpublish
 nebra unpublish @my-org/old-lib
+```
+
+## `nebra login` / `logout` / `whoami`
+
+Logs in to GitHub for the registry commands. `nebra login` shows a code, opens `github.com/login/device`, and finishes once you enter the code there. The token belongs to the Nebra CLI's GitHub app and can only open issues in the registry; it is kept in `~/.nebra/credentials.json`, readable only by you, and renewed when it expires.
+
+```bash
+nebra login
+nebra whoami     # → Logged in to GitHub as <account>.
+nebra logout
 ```
 
 ## `nebra scope add-owner|remove-owner <scope> <user>`
