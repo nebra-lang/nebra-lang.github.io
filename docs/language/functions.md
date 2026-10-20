@@ -86,7 +86,7 @@ end
 
 ## Overloading
 
-Multiple functions with the same name but different parameter counts:
+Several functions may share a name as long as their parameters differ, in number or in type:
 
 ```nebra
 function format(x: number): string
@@ -97,11 +97,39 @@ function format(x: number, decimals: number): string
     return string.format("%." .. decimals .. "f", x)
 end
 
+function format(x: string): string
+    return "\"" .. x .. "\""
+end
+
+function format(...: any): string
+    return "(" .. select("#", ...) .. " values)"
+end
+
 format(3.14)        -- "3.14"
 format(3.14, 1)     -- "3.1"
+format("hi")        -- "\"hi\""
+format(true, nil)   -- "(2 values)"
 ```
 
-The compiler generates a single dispatch function that selects the right implementation based on argument count.
+The compiler picks the overload whose parameters fit the arguments best. When it can tell which
+one a call means, the call goes straight to that overload: each one is compiled to its own Lua
+function, such as `format__number_number`. The plain name `format` is a dispatcher that picks the
+overload at runtime from the number and the types of its arguments. It handles calls with
+arguments typed `any`, functions passed around as values, and calls from other modules:
+
+- Primitives are told apart by `type()`.
+- Classes are told apart by their class, so an overload taking `Square` is tried before one
+  taking the `Shape` it extends.
+- Interfaces are recognised by the interfaces a class implements.
+- A varargs overload is tried last and catches whatever the others do not.
+
+Like in Java or C#, the compiler chooses by the type a value has where it is called. A `Square`
+held in a variable typed `Shape` goes to the `Shape` overload. Only an argument typed `any` is
+matched by its runtime value.
+
+Two overloads with the same parameter types are an error, even if their return types differ,
+since no call could choose between them. Class methods overload the same way, including methods
+a subclass adds to or overrides from its base class.
 
 ## Multi-Return
 
