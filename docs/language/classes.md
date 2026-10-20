@@ -430,9 +430,16 @@ local eq  = a == b     -- calls Vector2:__eq
 | `<`      | binary | `__lt`      |
 | `<=`     | binary | `__le`      |
 | `#`      | unary  | `__len`     |
+| `&`      | binary | `__band`    |
+| `\|`     | binary | `__bor`     |
+| `~`      | binary | `__bxor`    |
+| `~`      | unary  | `__bnot`    |
+| `<<`     | binary | `__shl`     |
+| `>>`     | binary | `__shr`     |
 
-Unary vs. binary `-` is disambiguated by parameter count: zero parameters means
-unary negation (`__unm`); one parameter means subtraction (`__sub`).
+Unary vs. binary `-` and `~` are disambiguated by parameter count: zero parameters means
+the unary operator (`__unm`, `__bnot`); one parameter means the binary one (`__sub`, `__bxor`).
+The bitwise operators need a target with bitwise operators, Lua 5.3 or later.
 
 Inside an operator body, `self` refers to the left-hand operand (or the sole
 operand for unary overloads). Binary overloads receive the right-hand operand
@@ -458,21 +465,24 @@ export class User
 end
 ```
 
-## Extension Methods
+## Extensions
 
-`extend Type ... end` adds methods to an existing type - a class, an interface, or a built-in
-like `string`, `number`, `function` or `thread` - without touching its original definition.
-Inside an extension method `self` is the receiver.
+`extend Type ... end` adds methods, getters and operators to an existing type - a class, an
+interface, or a built-in like `string`, `number`, `function` or `thread` - without touching its
+original definition. Inside an extension `self` is the receiver.
 
 ```nebra
 extend number
     function double(): number
         return self * 2
     end
-    function clamp(lo: number, hi: number): number
-        if self < lo then return lo end
-        if self > hi then return hi end
-        return self
+
+    get hour(): number
+        return self * 3600
+    end
+
+    get min(): number
+        return self * 60
     end
 end
 
@@ -480,17 +490,61 @@ extend string
     function shout(): string
         return string.upper(self) .. "!"
     end
+
+    operator <<(n: number): string
+        return string.sub(self, n + 1) .. string.sub(self, 1, n)
+    end
 end
 
 print((21):double())        -- 42
-print((5):clamp(0, 3))      -- 3
+print(1.hour + 2.min)       -- 3720
 print(("hi"):shout())       -- HI!
+print("hello" << 3)         -- lohel
 ```
 
-A call like `receiver:method(args)` lowers at compile time to a plain function call, so extension
-methods work on **every** type - including `number` and `boolean` - with zero runtime overhead and
-no metatable tricks. An extension on a base class or an interface is visible on all its
-subclasses / implementors. A real method always wins over an extension of the same name.
+A number literal can be read from directly: `1.hour` and `1.5.min` read the getters of `1` and
+`1.5`. A decimal number always needs digits after its dot, so `1.` is not a number.
 
-> Notes: extension functions are currently file-local (cross-file use is a work in progress), and
-> `self` on a primitive extension cannot call built-in methods via `:` (use `string.upper(self)`).
+Every use lowers at compile time to a plain call of a local function, such as
+`__ext_PrimitiveNumber_get_hour(1)`. Extensions therefore work on **every** type, including
+`number` and `boolean`, with no runtime overhead and no metatable tricks. An extension on a base class
+or an interface is visible on all its subclasses / implementors. A real member always wins over an
+extension of the same name. Built-in methods are not reachable through `:` on a primitive, so an
+extension on `string` calls `string.upper(self)` rather than `self:upper()`.
+
+### Getters
+
+`get name(): T` adds a read-only property. An extension cannot declare a setter.
+
+### Operators
+
+An extension may declare the same operators a class can, listed under
+[Supported Operators](#supported-operators). Overloads of one operator differ by the type of their operand. The extension is used when the
+left operand has the extended type and the right one fits its parameter.
+
+An extension cannot replace what Lua already does: arithmetic and bitwise operators between numbers,
+`..` between strings and numbers, comparing two numbers or two strings, `#` of strings and tables,
+`==` on anything, and any operator a class declares itself. These are compile errors.
+
+### Sharing extensions between modules
+
+An `extend` block is local to its module. Write `export extend` to let other modules use it: a
+module that imports the declaring one, with any form of `import`, may use its exported extensions.
+
+```nebra
+-- units.neb
+export extend number
+    get kb(): number
+        return self * 1024
+    end
+end
+
+-- main.neb
+import "./units"
+
+print(5.kb)                 -- 5120
+```
+
+Using an extension of a module you do not import, or one it does not export, is a compile error.
+Exported extensions are also part of a package's generated declarations, so they reach other
+packages the same way.

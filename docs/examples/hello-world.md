@@ -121,7 +121,7 @@ local upper: string = s:upper()         -- error: type 'string' has no method 'u
 ```
 
 Call the library function directly, or add the method yourself with an
-[`extend string`](../language/types.md) block if you want the receiver syntax across your codebase.
+[`export extend string`](../language/classes.md#extensions) block if you want the receiver syntax across your codebase.
 
 ## Turning the safety up
 
