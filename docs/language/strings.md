@@ -58,6 +58,9 @@ The `..` operator always works for concatenation:
 local greeting = "Hello" .. " " .. "World"
 ```
 
+Between two numbers, `..` builds a [range](./control-flow.md#ranges) instead. Convert one side
+with `tostring` to join two numbers as text.
+
 With `concat_operator = "+"` in config, `+` also works:
 
 ```nebra

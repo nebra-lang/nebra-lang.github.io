@@ -46,6 +46,26 @@ for i = 0, 100, 5 do  -- with step
 end
 ```
 
+### Ranges
+
+`a..b` between two numbers is the range from `a` up to and including `b`. A `for ... in` over
+a range compiles to the numeric `for` above, so it costs nothing:
+
+```nebra
+for i in 1..10 do
+    print(i)
+end
+```
+
+Used anywhere else, a range is a `number[]` holding each of its numbers:
+
+```nebra
+local steps = 1..5          -- { 1, 2, 3, 4, 5 }
+```
+
+`..` only builds a range when both operands are typed `number`. As soon as one of them is a
+string, it concatenates as usual, so `1 .. "x"` is `"1x"` and `1 .. 2 .. "x"` is `"12x"`.
+
 ## Generic For
 
 ```nebra

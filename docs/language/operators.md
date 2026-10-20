@@ -44,7 +44,7 @@ description: "Arithmetic, comparison, logical, bitwise, increment and decrement,
 
 | Operator | Description       |
 |----------|-------------------|
-| `..`     | Concatenation     |
+| `..`     | Concatenation, or a [range](./control-flow.md#ranges) between two numbers |
 | `#`      | Length            |
 
 ### Bitwise (Lua 5.3+)
