@@ -448,6 +448,14 @@ Inside an operator body, `self` refers to the left-hand operand (or the sole
 operand for unary overloads). Binary overloads receive the right-hand operand
 as the single parameter.
 
+A binary operator can be declared several times for different right-hand operand
+types, like any overloaded method. The compiler picks the one whose parameter takes
+the right operand and types the result from it, so with `operator *(other: Quaternion): Quaternion`
+and `operator *(other: Vector): Vector`, `rotation * rotation` is a `Quaternion` and
+`rotation * direction` a `Vector`. A right operand no overload takes is an error. A class
+operator also wins over string concatenation: although `+` concatenates strings by default
+(`concat_operator`), a class whose `operator +` accepts a `string` handles `price + "0.03"` itself.
+
 ### Index and Call Operators
 
 `operator []` and `operator []=` let an instance be indexed like a table, and
