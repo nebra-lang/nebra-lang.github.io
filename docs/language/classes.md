@@ -436,6 +436,9 @@ local eq  = a == b     -- calls Vector2:__eq
 | `~`      | unary  | `__bnot`    |
 | `<<`     | binary | `__shl`     |
 | `>>`     | binary | `__shr`     |
+| `[]`     | key    | `__index`   |
+| `[]=`    | key, value | `__newindex` |
+| `()`     | any    | `__call`    |
 
 Unary vs. binary `-` and `~` are disambiguated by parameter count: zero parameters means
 the unary operator (`__unm`, `__bnot`); one parameter means the binary one (`__sub`, `__bxor`).
@@ -444,6 +447,53 @@ The bitwise operators need a target with bitwise operators, Lua 5.3 or later.
 Inside an operator body, `self` refers to the left-hand operand (or the sole
 operand for unary overloads). Binary overloads receive the right-hand operand
 as the single parameter.
+
+### Index and Call Operators
+
+`operator []` and `operator []=` let an instance be indexed like a table, and
+`operator ()` lets it be called like a function:
+
+```nebra
+class Store
+    data: { [string]: number } = {}
+
+    operator [](key: string): number
+        return self.data[key] ?? 0
+    end
+
+    operator []=(key: string, value: number)
+        self.data[key] = value
+    end
+end
+
+class Greeter
+    prefix: string = "hi"
+
+    operator ()(who: string): string
+        return self.prefix .. " " .. who
+    end
+end
+
+local store = new Store()
+store["hp"] = 100        -- calls operator []=
+print(store["hp"])       -- calls operator [], 100
+
+local greet = new Greeter()
+print(greet("bob"))      -- calls operator (), "hi bob"
+```
+
+- `store[key]` is typed by the operator's return type, and `store[key] = value`
+  checks the key and the value against its parameters. A class with `operator []`
+  but no `operator []=` cannot be assigned to by index.
+- The operators only handle keys that are not members of the class. Methods,
+  getters and static members are found as usual, and a declared field such as
+  `store.data` is read and written on the instance, so constructors and field
+  defaults are never routed to the operators.
+- The key reaches the operator as written. `index_base` only shifts the indexes
+  of arrays.
+- `operator ()` takes any parameters and can be overloaded like a method.
+  Calling the class itself, as in `Greeter()`, stays an error: instances are
+  created with `new`.
 
 ### Inheritance
 
@@ -524,7 +574,9 @@ left operand has the extended type and the right one fits its parameter.
 
 An extension cannot replace what Lua already does: arithmetic and bitwise operators between numbers,
 `..` between strings and numbers, comparing two numbers or two strings, `#` of strings and tables,
-`==` on anything, and any operator a class declares itself. These are compile errors.
+indexing strings and tables, calling functions, `==` on anything, and any operator a class declares
+itself. These are compile errors. An extension's `[]`, `[]=` and `()` lower to calls like its other
+operators: `v[0]` on an extended `Vec` calls the extension's `operator []` with `v` and `0`.
 
 ### Sharing extensions between modules
 
