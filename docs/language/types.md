@@ -74,6 +74,22 @@ local point: { x: number, y: number } = { x = 10, y = 20 }
 local user: { name: string, age: number, active: boolean }
 ```
 
+Struct types are checked by their shape. A table fits a struct type when it holds every field the
+type declares with a fitting value. A field typed `T?` may be left out, and fields beyond the declared
+ones are allowed. That makes typed option tables work:
+
+```nebra
+function spawn(options: { x: number, z: number? }): nil
+    print(options.x, options.z ?? 0)
+end
+
+spawn({ x = 1, z = 2 })
+spawn({ x = 1 })              -- z is optional
+spawn({ z = 2 })              -- error: x is missing
+```
+
+A table literal also fits an [interface](./interfaces.md#tables-as-interfaces) in the same way.
+
 ### Meta Fields
 
 ```nebra
@@ -298,4 +314,6 @@ Use parentheses to group complex types:
 
 ```nebra
 local arr: (string | number)[] = {"hello", 42}
+local onDone: (() -> number)? = nil     -- an optional function
+local next: () -> number?               -- a function returning an optional number
 ```

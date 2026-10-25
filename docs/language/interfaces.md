@@ -103,6 +103,28 @@ class Widget implements Drawable, Printable, Serializable
 end
 ```
 
+## Tables as Interfaces
+
+A table literal fits an interface when it holds every field the interface and the interfaces it
+extends declare, with fitting values, and a function for each of their methods. A field typed `T?`
+may be left out:
+
+```nebra
+interface Point
+    x: number
+    z: number?
+end
+
+function distance(p: Point): number
+    return math.sqrt(p.x * p.x + (p.z ?? 0) ^ 2)
+end
+
+distance({ x = 3, z = 4 })    -- 5
+distance({ x = 3 })           -- z is optional
+```
+
+A plain table has no class to supply a default method, so it must provide every method itself.
+
 ## Exported Interfaces
 
 ```nebra
