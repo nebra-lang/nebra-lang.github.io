@@ -8,7 +8,7 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
-## Unreleased
+## 0.5.15 (2026-10-27)
 
 ### Breaking
 
