@@ -24,6 +24,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Fixed
 
+- A generic method implementing a generic interface method is compared with it key by key, a union fits a union holding each of its members, and errors in code an annotation generates point at the annotation. ([#208](https://github.com/nebra-lang/nebra/issues/208))
 - `nebra test` no longer hangs when a test directory contains a link back to the project, such as a fixture's `nebra_modules/` linking to the package it tests. The CLI walks directories like the language server does, without following directory links or entering `nebra_modules/`, and test discovery skips nested projects that have their own `nebra.toml`. ([#205](https://github.com/nebra-lang/nebra/issues/205))
 
 ## 0.5.14 (2026-10-27)
