@@ -193,7 +193,7 @@ end
 
 At a call site the type parameters stay open and are inferred from the arguments, so `wrap(5)` and `wrap("x")` both work, also as a recursive call inside `wrap` itself.
 
-A generic class is written `Box<T>` and used as `Box<number>`. Naming it without type arguments, as `Box`, is an error, in annotations as well as in `extends` and `implements`. Its type arguments are checked where they are written but erased afterwards: a `Box<number>` is a `Box` to the checker, so what its methods return is not specialized the way a generic function's result is.
+A generic class is written `Box<T>` and used as `Box<number>`. Naming it without type arguments, as `Box`, is an error in annotations as well as in `extends` and `implements`. Each instantiation is its own type whose members have the type arguments filled in, so what the methods of a `Box<number>` return is specialized just like a generic function's result. `new` infers the type arguments from the constructor's arguments:
 
 ```nebra
 class Box<T>
@@ -202,10 +202,41 @@ class Box<T>
     constructor(value: T)
         self.value = value
     end
+
+    function map<U>(f: (T) -> U): Box<U>
+        return new Box(f(self.value))
+    end
 end
 
-local box: Box<number> = new Box(1)
+local box = new Box(1)                          -- Box<number>
+local n: number = box.value
+local label = box:map(function(x: number): string
+    return tostring(x)
+end)                                            -- Box<string>
+local wrong: string = box.value                 -- error: number is not a string
 ```
+
+Type arguments also pass through `extends` and `implements`, and through interfaces:
+
+```nebra
+interface Source<T>
+    method next(): T?
+end
+
+class Stack<T> implements Source<T>
+    -- ...
+end
+
+class Numbers extends Stack<number>
+end
+
+local source: Source<number> = new Numbers({ 1, 2 })    -- fine
+local strings: Source<string> = new Numbers({ 1, 2 })   -- error
+```
+
+An instantiation fits another one of the same class when each of its type arguments fits the other's, so a `Box<number>` fits a `Box<number?>`, and a `Numbers` fits a `Stack<number>` and a `Source<number>`.
+
+Generated declaration files keep type parameters, their bounds and the type arguments of `extends` and `implements`, so a package's generic classes and functions are just as specialized for the code that uses it.
 
 ## The `never` Type
 
@@ -290,6 +321,8 @@ end
 ```
 
 Compiles to `type(x) == "number"`.
+
+A check against a generic class without type arguments, `value is Box`, matches every instantiation. A check against an instantiation, `value is Box<number>` or `value instanceof Box<number>`, also compares the type arguments. Lua values do not carry them, so when a build contains such a check, `new` records the type arguments of each generic object it creates in a weak side table, and the check reads them from there. Objects created by code that does not record them (such as plain Lua) only have their class checked. Type arguments that are type parameters, as in `value is Box<T>`, are not known at runtime, so such a check only tests the class and warns about it.
 
 ## Type Predicates (custom guards)
 

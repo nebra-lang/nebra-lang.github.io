@@ -8,6 +8,18 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Breaking
+
+- The members of a generic class or interface now have the type arguments of the instantiation they are used through, so a mismatch such as `local name: string = new Box(1).value` is an error where the erased `T` let it pass before. ([#204](https://github.com/nebra-lang/nebra/issues/204))
+
+### Added
+
+- Generic classes and interfaces are fully substituted: each instantiation such as `Box<number>` has its type arguments filled into its fields, methods, getters, operators, base class and interfaces, `new` infers them from the constructor's arguments, and an instantiation fits another of the same class when its type arguments do. ([#204](https://github.com/nebra-lang/nebra/issues/204))
+- `is` and `instanceof` against an instantiation, such as `value is Box<number>`, compare the type arguments at runtime. A generic class without type arguments, `value is Box`, matches every instantiation. ([#204](https://github.com/nebra-lang/nebra/issues/204))
+- Generated declaration files keep type parameters with their bounds and the type arguments of `extends` and `implements`. ([#203](https://github.com/nebra-lang/nebra/issues/203))
+
 ## 0.5.14 (2026-10-27)
 
 ### Breaking
