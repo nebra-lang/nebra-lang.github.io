@@ -118,6 +118,8 @@ Discovers and runs unit / integration tests.
 - It lives under any directory listed in `[test].dirs` (default: `tests/`, `test/`), recursively; or
 - Its filename ends with one of `[test].patterns` (default: `_test.neb`, `.test.neb`).
 
+A directory with its own `nebra.toml` inside a test directory is a separate project and is skipped, and directory links, hidden directories and `nebra_modules/` are never entered.
+
 The optional `[filter]` argument matches against the full test name (substring; case-sensitive). Only matching tests run; the others are skipped silently.
 
 | Flag             | Description                                  |

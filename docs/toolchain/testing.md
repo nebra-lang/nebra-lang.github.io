@@ -102,6 +102,7 @@ quiet = false
 
 - Any `.neb` file inside one of `[test].dirs` is a test file.
 - Any `.neb` file (anywhere under `[source]`) whose filename ends with one of `[test].patterns` is a test file.
+- A directory inside `[test].dirs` that has its own `nebra.toml` is a separate project, such as a fixture, and its files are not test files. Directory links, hidden directories and `nebra_modules/` are not entered.
 
 ```
 src/

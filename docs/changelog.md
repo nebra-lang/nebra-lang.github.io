@@ -20,6 +20,10 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 - `is` and `instanceof` against an instantiation, such as `value is Box<number>`, compare the type arguments at runtime. A generic class without type arguments, `value is Box`, matches every instantiation. ([#204](https://github.com/nebra-lang/nebra/issues/204))
 - Generated declaration files keep type parameters with their bounds and the type arguments of `extends` and `implements`. ([#203](https://github.com/nebra-lang/nebra/issues/203))
 
+### Fixed
+
+- `nebra test` no longer hangs when a test directory contains a link back to the project, such as a fixture's `nebra_modules/` linking to the package it tests. The CLI walks directories like the language server does, without following directory links or entering `nebra_modules/`, and test discovery skips nested projects that have their own `nebra.toml`. ([#205](https://github.com/nebra-lang/nebra/issues/205))
+
 ## 0.5.14 (2026-10-27)
 
 ### Breaking
