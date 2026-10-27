@@ -260,6 +260,47 @@ end
 
 Non-abstract subclasses **must** implement all abstract methods, or the compiler reports an error.
 
+## Sealed Classes
+
+A class marked `sealed` cannot be extended:
+
+```nebra
+abstract class Shape
+end
+
+sealed class Circle extends Shape
+end
+
+class Ring extends Circle      -- error: 'Circle' is sealed
+end
+```
+
+`sealed` is only a keyword in front of `class`; it stays usable as a name everywhere else.
+
+## Local Constructors
+
+A constructor declared `local` can only be used inside its class, for example by a static factory:
+
+```nebra
+class Connection
+    local constructor(url: string)
+        self.url = url
+    end
+
+    url: string
+
+    static function open(url: string): Connection
+        return new Connection(url)
+    end
+end
+
+local direct = new Connection("db")       -- error: the constructor is local
+local opened = Connection.open("db")      -- fine
+```
+
+A class with a local constructor cannot be extended either, since the subclass would have to call
+it.
+
 ## Private Members
 
 Fields and methods declared `local` are private: they live on the instance like any other

@@ -72,17 +72,22 @@ end
 
 ### Named Varargs
 
-Give a name and type to the variadic parameter:
+Give a name and type to the variadic parameter. Inside the function, the name holds the
+arguments as an array (`number[]` here):
 
 ```nebra
 function sum(...values: number): number
-    local total = 0
-    for _, v in ipairs({...}) do
+    local mut total = 0
+    for _, v in ipairs(values) do
         total = total + v
     end
     return total
 end
+
+sum(1, 2, 3)   -- 6
 ```
+
+`...` stays available as well, for passing the arguments on unchanged, as in `print(...)`.
 
 ## Overloading
 
