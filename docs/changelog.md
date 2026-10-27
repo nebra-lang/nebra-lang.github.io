@@ -32,6 +32,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Changed
 
+- Expressions made only of literals are computed while compiling and written as their result, with Lua's integer and float semantics. ([#19](https://github.com/nebra-lang/nebra/issues/19))
 - A derived class whose constructor only creates the base instance compiles to a single `return setmetatable(Base.new(...), Class)`, and `...` is forwarded only when the inherited constructor takes parameters. ([#195](https://github.com/nebra-lang/nebra/issues/195))
 - A subclass copies only the metamethods its base classes actually declare; the copying loop is left out when there are none. ([#192](https://github.com/nebra-lang/nebra/issues/192))
 

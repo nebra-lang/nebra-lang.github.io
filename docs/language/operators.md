@@ -210,3 +210,18 @@ end
 ```
 
 Walks the metatable chain so both direct and inherited class matches return true. Returns `false` for non-table values or unknown classes.
+
+## Constant Folding
+
+An expression made only of literals is computed while compiling and written as its result, the way
+Lua would compute it at runtime:
+
+```nebra
+print((1 + 2.0) * -0x3)    -- compiles to print((-9.0))
+print(7 // 2, "a" .. 1)    -- compiles to print(3, "a1")
+```
+
+On targets with an integer subtype (Lua 5.3 and later), integers stay integers and floats stay
+floats. Expressions whose result depends on the runtime are left as written: a division by zero,
+results that are infinite or not a number, floats turned into text, and operators supplied by an
+extension or a class.
