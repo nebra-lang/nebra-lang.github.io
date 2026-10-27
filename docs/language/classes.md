@@ -168,7 +168,14 @@ end
 
 ### Super Calls
 
-`super(args)` can only be used inside a derived class constructor. It must be the first statement.
+`super(args)` can only be used inside a derived class constructor. It must be the first statement;
+anywhere else, including methods and interface defaults, it is a compile error. To call the parent's
+version of a method, use `super:method(args)` (see [Override](#override)).
+
+A class has exactly one constructor. Declaring a second one is an error; give parameters default
+values or make them optional (`name: string?`) to allow several ways of constructing it. A
+constructor may end in varargs (`constructor(name: string, ...)`), which take any number of
+further arguments.
 
 ```nebra
 class Cat extends Animal
@@ -509,6 +516,29 @@ Operator overloads are inherited: a subclass automatically picks up its base
 class's operators unless it defines its own. Re-declaring an operator in a
 subclass overrides the inherited one.
 
+### Rules for Operators
+
+- An operator returns a single value, since Lua passes on only the first value a
+  metamethod returns. `operator ()` is the exception: a call hands on everything.
+- Operators, constructors and getters/setters cannot declare type parameters;
+  they are never called with type arguments.
+- Operators are declared with `operator`, not as methods named after their
+  metamethod. Member names Nebra reserves are an error: the metamethods
+  `operator` declares (`__add`, `__eq`, `__len`, ...), `__index` and `__newindex`
+  (use `operator []` and `operator []=`), `__name`, `__interfaces`, `__metatable`,
+  and names starting with `__nebra`, `__get_`, `__set_`, `__op_` or `__ext_`.
+- Metamethods without a syntax of their own stay available as methods, since the
+  class table is its instances' metatable: `function __tostring(): string`,
+  `__close`, `__gc`, `__pairs`, and `__call` as long as the class does not also
+  declare `operator ()`.
+
+## Replacing Classes
+
+A class written in Nebra, its constructor and its methods cannot be replaced from
+outside: `A = ...`, `A.new = ...`, `function A.new() end` and `function A:method() end`
+for an existing method are errors. Static fields stay assignable, and declared classes,
+which describe tables the runtime owns, may still be patched.
+
 ## Exported Classes
 
 ```nebra
@@ -567,7 +597,7 @@ Every use lowers at compile time to a plain call of a local function, such as
 `__ext_PrimitiveNumber_get_hour(1)`. Extensions therefore work on **every** type, including
 `number` and `boolean`, with no runtime overhead and no metatable tricks. An extension on a base class
 or an interface is visible on all its subclasses / implementors. A real member always wins over an
-extension of the same name. Built-in methods are not reachable through `:` on a primitive, so an
+extension of the same name, and the compiler warns about an extension that is shadowed that way. Built-in methods are not reachable through `:` on a primitive, so an
 extension on `string` calls `string.upper(self)` rather than `self:upper()`.
 
 ### Getters

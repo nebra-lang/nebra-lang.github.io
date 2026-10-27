@@ -173,3 +173,7 @@ Inside a default, `self` refers to the implementing instance, so a default may c
 (abstract or default) interface methods and read interface fields. Defaults declared on a
 base interface are inherited through `extends`. At compile time the default body is copied
 onto each implementing class that does not override it - no runtime library, no shared state.
+
+When two implemented interfaces both provide a default for the same method, the more specific one
+wins if one interface extends the other, and the same default reached through two paths is fine.
+Two unrelated defaults are an error: the class must override the method and decide what it does.
