@@ -52,6 +52,19 @@ interface Drawable
 end
 ```
 
+A field whose name is no identifier, such as an event name, is written as a string and read with an index:
+
+```nebra
+interface AppEvents
+    "user:login": (LoginEvent) -> nil
+    tick: (number) -> nil
+end
+
+local login = events["user:login"]
+```
+
+Together with [`keyof` and indexed access types](./types.md#keyof-and-indexed-access-types) such an interface types an event map.
+
 ## Interface Inheritance
 
 Interfaces can extend other interfaces:

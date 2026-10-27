@@ -104,6 +104,24 @@ local handler: (string) -> void
 local factory: () -> (number, string)       -- multi-return
 ```
 
+A function literal whose parameters have no annotation takes their types from the function type it is written for: a call argument, an annotated local, a field, an assignment target or a field of a table literal. In a generic call the type parameters are filled in from the other arguments first:
+
+```nebra
+local function on(name: string, callback: (number) -> nil): nil
+    callback(1)
+end
+
+on("tick", function(delta)          -- delta: number
+    print(delta + 1)
+end)
+
+local labels = map({ 1, 2 }, function(item)   -- map from Generics below, item: number
+    return tostring(item)
+end)                                           -- string[]
+```
+
+A parameter with an annotation keeps it, and a function literal without an expected type takes anything, as before.
+
 ## Tuple Types
 
 For multi-return values:
@@ -135,6 +153,57 @@ local tag, x, y = tagged()            -- tag: string, x/y: number
 
 A `...T` return may yield zero values, so - like `void` - it is exempt from the "must return a
 value" check. When captured by a single variable it collapses to `T`.
+
+## Literal Types
+
+A string, number or boolean literal is a type that holds just that value, usually in a union:
+
+```nebra
+local mode: "fast" | "slow" = "fast"
+local level: 1 | 2 | 3 = 2
+local flag: true = true
+
+mode = "medium"                     -- error: '"medium"' is not '"fast" | "slow"'
+
+local function speedOf(mode: "fast" | "slow"): number
+    return mode == "fast" and 2 or 1
+end
+```
+
+A literal type is used like its base type, so `mode .. "!"`, `#mode` and `level + 1` work, and it fits wherever its base type does. A plain `string` does not fit a literal type, since it may hold any text. A literal keeps its literal type only where one is expected; `local name = "fast"` is still a `string`.
+
+## `keyof` and Indexed Access Types
+
+`keyof T` is the union of the names of the fields of a struct, class or interface, each as a string literal type. `T[K]` is the type of the field `K` of `T`, or the union of several fields for a union of names. Together with a type parameter they type an event map, where each event name has its own callback:
+
+```nebra
+interface AppEvents
+    "user:login": (LoginEvent) -> nil
+    "user:logout": () -> nil
+    tick: (number) -> nil
+end
+
+declare function on<K extends keyof AppEvents>(name: K, callback: AppEvents[K]): nil
+
+on("user:login", function(event)    -- event: LoginEvent
+    print(event.userId)
+end)
+on("tick", function(delta)          -- delta: number
+end)
+on("user:logn", function() end)     -- error: expected '"user:login" | "user:logout" | "tick"'
+```
+
+The call fills in `K` with the literal type of the name it is given, so `AppEvents[K]` is the type of that one field. A field whose name is no identifier is written as a string, such as `"user:login"`, and read with an index: `events["user:login"]`. A table literal written for such a type uses string keys for those fields:
+
+```nebra
+local events: AppEvents = {
+    ["user:login"] = function(event) print(event.userId) end,
+    ["user:logout"] = function() end,
+    tick = function(delta) end,
+}
+```
+
+`keyof` of a type without fields, such as `keyof number`, and an indexed access naming a field the type does not have are errors. Mapped, template literal and conditional types are not supported.
 
 ## Generics
 

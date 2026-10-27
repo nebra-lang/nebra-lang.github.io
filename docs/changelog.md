@@ -19,6 +19,8 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 - Generic classes and interfaces are fully substituted: each instantiation such as `Box<number>` has its type arguments filled into its fields, methods, getters, operators, base class and interfaces, `new` infers them from the constructor's arguments, and an instantiation fits another of the same class when its type arguments do. ([#204](https://github.com/nebra-lang/nebra/issues/204))
 - `is` and `instanceof` against an instantiation, such as `value is Box<number>`, compare the type arguments at runtime. A generic class without type arguments, `value is Box`, matches every instantiation. ([#204](https://github.com/nebra-lang/nebra/issues/204))
 - Generated declaration files keep type parameters with their bounds and the type arguments of `extends` and `implements`. ([#203](https://github.com/nebra-lang/nebra/issues/203))
+- Literal types such as `"fast" | "slow"`, `1 | 2` and `true`, `keyof T` and indexed access types `T[K]`, so an event map types each callback by the name it is registered under. Interface and struct fields may be named by a string such as `"user:login"`. ([#206](https://github.com/nebra-lang/nebra/issues/206))
+- A function literal without parameter annotations takes its parameter types from the function type it is passed or assigned to. ([#207](https://github.com/nebra-lang/nebra/issues/207))
 
 ### Fixed
 
