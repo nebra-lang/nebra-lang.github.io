@@ -332,6 +332,10 @@ p.age = 25           -- calls setter
 print(p.age)         -- calls getter
 ```
 
+A getter takes no parameters and a setter exactly one, the assigned value. A property with only a
+setter can be assigned but not read; reading it is an error. Getters and setters cannot declare
+type parameters.
+
 ### Lua Output (Accessors)
 
 When a class has getters/setters, Nebra uses a proxy metatable:

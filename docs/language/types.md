@@ -176,7 +176,24 @@ describe(new Tag())                             -- Tag implements Named
 describe(5)                                     -- error: 5 does not
 ```
 
-A generic class is written `Box<T>` and used as `Box<number>`. Its type arguments are checked where they are written but erased afterwards: a `Box<number>` is a `Box` to the checker, so what its methods return is not specialized the way a generic function's result is.
+Inside the body of a generic function, class, method or interface default, a type parameter stands for one type the caller chooses. Only a value of that type parameter fits it, and it fits only what its bounds fit:
+
+```nebra
+local function wrap<T>(value: T): T
+    local copy: T = value       -- fine
+    local wrong: T = 5          -- error: 5 is not a T
+    return value
+end
+
+local function add<T>(a: T, b: T): T
+    print(a + b)                -- error: T is not known to be a number
+    return a
+end
+```
+
+At a call site the type parameters stay open and are inferred from the arguments, so `wrap(5)` and `wrap("x")` both work, also as a recursive call inside `wrap` itself.
+
+A generic class is written `Box<T>` and used as `Box<number>`. Naming it without type arguments, as `Box`, is an error, in annotations as well as in `extends` and `implements`. Its type arguments are checked where they are written but erased afterwards: a `Box<number>` is a `Box` to the checker, so what its methods return is not specialized the way a generic function's result is.
 
 ```nebra
 class Box<T>
