@@ -22,6 +22,40 @@ local function multiply(x: number, y: number): number
 end
 ```
 
+## Definition Order
+
+The top-level functions, classes and `extend` blocks of a file are declared before its first
+statement, so a function body can use one written further down. Each of them only exists once its
+definition has run, though, since a file runs from top to bottom. Code that runs right away and
+reaches a definition further down is therefore an error:
+
+```nebra
+local function makeShape(): Shape
+    return new Shape()          -- fine: runs only when called
+end
+
+local early = makeShape()       -- error: calls makeShape before class Shape has run
+print(1.hour)                   -- error: the extend block below has not run yet
+
+class Circle extends Shape      -- error: Shape is defined further down
+end
+
+class Shape
+end
+
+extend number
+    get hour(): number
+        return self * 3600
+    end
+end
+
+local late = makeShape()        -- fine
+```
+
+Function bodies, method bodies and closures run later and may use anything in the file; only
+code that runs while the file loads, including static field defaults and the class a class
+extends, has to come after what it uses.
+
 ## Method Syntax
 
 ```nebra

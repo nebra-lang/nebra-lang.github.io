@@ -29,6 +29,26 @@ if name ~= nil then
 end
 ```
 
+Strict nil mode also requires every instance field whose type does not allow nil to be
+initialized: by a default value, or by an assignment on every path of the constructor.
+Otherwise the field would start as nil:
+
+```nebra
+class Account
+    id: number                  -- error: never initialized
+    owner: string               -- fine: assigned in the constructor
+    note: string?               -- fine: may be nil
+    balance: number = 0         -- fine: has a default
+
+    constructor(owner: string)
+        self.owner = owner
+    end
+end
+```
+
+An assignment in a method the constructor calls does not count; give such a field a default or
+make it nullable.
+
 ## Non-Nil Assertion (`!`)
 
 Assert that a value is not nil. The type checker treats the result as non-nullable:

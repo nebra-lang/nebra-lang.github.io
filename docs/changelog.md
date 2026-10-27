@@ -24,6 +24,8 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Added
 
+- Code that runs while a file loads and reaches a class, function or `extend` block defined further down the same file is an error, including `class B extends A` above `A`, which left `B` without `A`'s methods. ([#154](https://github.com/nebra-lang/nebra/issues/154))
+- Under `strict_nil`, an instance field whose type does not allow nil must be initialized by a default value or on every path of the constructor. ([#186](https://github.com/nebra-lang/nebra/issues/186))
 - `sealed class` prevents a class from being extended. ([#180](https://github.com/nebra-lang/nebra/issues/180))
 - `local constructor` limits creating instances to the class itself, for factories and singletons. ([#173](https://github.com/nebra-lang/nebra/issues/173))
 - A warning for an extension that is never used because the extended type has a member of the same name. ([#189](https://github.com/nebra-lang/nebra/issues/189))
