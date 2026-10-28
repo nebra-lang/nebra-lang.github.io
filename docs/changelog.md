@@ -8,6 +8,12 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Fixed
+
+- An overload taking a union of literals, such as `mode: "fill" | "line"`, is picked for a literal argument, and a call no overload takes is reported with the overloads there are. ([#214](https://github.com/nebra-lang/nebra/issues/214))
+
 ## 0.5.17 (2026-10-28)
 
 ### Added
