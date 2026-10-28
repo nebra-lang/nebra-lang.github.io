@@ -8,6 +8,12 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Added
+
+- A class may declare several constructors with different parameter types. `new` and `super(...)` pick the one the arguments fit, at compile time where it is known and through `new` at runtime otherwise. ([#182](https://github.com/nebra-lang/nebra/issues/182))
+
 ## 0.5.15 (2026-10-27)
 
 ### Breaking

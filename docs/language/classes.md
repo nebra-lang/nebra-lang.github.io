@@ -172,9 +172,7 @@ end
 anywhere else, including methods and interface defaults, it is a compile error. To call the parent's
 version of a method, use `super:method(args)` (see [Override](#override)).
 
-A class has exactly one constructor. Declaring a second one is an error; give parameters default
-values or make them optional (`name: string?`) to allow several ways of constructing it. A
-constructor may end in varargs (`constructor(name: string, ...)`), which take any number of
+A constructor may end in varargs (`constructor(name: string, ...)`), which take any number of
 further arguments.
 
 ```nebra
@@ -184,6 +182,40 @@ class Cat extends Animal
     end
 end
 ```
+
+### Constructor Overloads
+
+A class may declare several constructors as long as their parameter types differ, the same way
+[functions are overloaded](./functions.md#overloading). `new` picks the one the arguments fit:
+
+```nebra
+class Color
+    value: string | number
+
+    constructor(name: string)
+        self.value = name
+    end
+
+    constructor(hex: number)
+        self.value = hex
+    end
+
+    constructor()
+        self.value = 0
+    end
+end
+
+local red = new Color("red")        -- Color.new__string("red")
+local blue = new Color(0x0000FF)    -- Color.new__number(0x0000FF)
+local none = new Color()            -- Color.new__none()
+```
+
+Each overload is emitted under its own name, and a call whose overload is known at compile time
+reaches it directly. `Color.new` remains and picks the overload from the arguments at runtime, for
+a value typed `any` and for Lua code calling it. `super(args)` picks among the base class's
+constructors the same way, and a subclass without a constructor of its own takes all of them.
+Two constructors of the same parameter types are an error, and so are arguments no constructor
+takes. Under `strict_nil`, a field must be initialized by every constructor.
 
 ## Override
 
@@ -298,8 +330,9 @@ local direct = new Connection("db")       -- error: the constructor is local
 local opened = Connection.open("db")      -- fine
 ```
 
-A class with a local constructor cannot be extended either, since the subclass would have to call
-it.
+A class whose constructors are all local cannot be extended either, since the subclass would have
+to call one. With [overloads](#constructor-overloads), each constructor may be local or not on its
+own.
 
 ## Private Members
 
