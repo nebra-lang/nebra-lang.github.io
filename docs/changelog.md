@@ -16,6 +16,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Added
 
+- Utility types `Partial<T>`, `Required<T>`, `Pick<T, K>` and `Omit<T, K>` make a struct type from the fields of a struct, class or interface. ([#210](https://github.com/nebra-lang/nebra/issues/210))
 - Completion puts what fits the expected type first: the members of an expected enum as the shorthand, then values and functions of that type, in an annotated local, an argument, an assignment, a `return`, a comparison, a `match` case and a field or element of a table literal. ([#211](https://github.com/nebra-lang/nebra/issues/211))
 - `target = "luajit"` is accepted as another name for `"jit"`. ([#209](https://github.com/nebra-lang/nebra/issues/209))
 - `try ... catch (err) ... finally ... end`. A `return` inside `try` or `catch` returns from the enclosing function, `try` without `catch` raises the error again after `finally`, and a bare `try ... end` ignores it. ([#181](https://github.com/nebra-lang/nebra/issues/181))
@@ -24,6 +25,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Fixed
 
+- An empty table literal fits a struct type whose fields are all optional, and a missing field of a struct is reported with the fields it has. ([#210](https://github.com/nebra-lang/nebra/issues/210))
 - A half-written `case` of a `match` no longer drops the whole file from the language server, which left it without completion, hover and diagnostics. ([#211](https://github.com/nebra-lang/nebra/issues/211))
 - A `nebra.toml` that cannot be read, such as one with an unknown `target`, stops the build instead of building with every setting at its default. ([#209](https://github.com/nebra-lang/nebra/issues/209))
 

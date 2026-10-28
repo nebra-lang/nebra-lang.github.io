@@ -205,6 +205,42 @@ local events: AppEvents = {
 
 `keyof` of a type without fields, such as `keyof number`, and an indexed access naming a field the type does not have are errors. Mapped, template literal and conditional types are not supported.
 
+## Utility Types
+
+Four built-in types make a struct type from the fields of a struct, class or interface, so a second type does not have to be declared by hand:
+
+| Type | Fields |
+|---|---|
+| `Partial<T>` | every field of `T`, made optional |
+| `Required<T>` | every field of `T`, without `nil` |
+| `Pick<T, K>` | the fields of `T` that `K` names |
+| `Omit<T, K>` | every field of `T` except those `K` names |
+
+`K` is a string literal type or a union of them, such as `"name" | "email"` or `keyof Timestamps`. Fields include inherited ones; methods, getters and operators are not part of the result.
+
+```nebra
+class User
+    name: string = ""
+    email: string = ""
+    age: number = 0
+end
+
+local function update(user: User, changes: Partial<User>): nil
+    user.name = changes.name ?? user.name
+    user.age = changes.age ?? user.age
+end
+
+update(user, { age = 31 })              -- the other fields may be left out
+update(user, {})
+update(user, { age = "31" })            -- error: age is a number
+
+local function contact(person: Pick<User, "name" | "email">): string
+    return person.name .. " <" .. person.email .. ">"
+end
+```
+
+The result is a struct type, checked by its shape like any other, so a table literal written for it takes its fields and callbacks. Used with a type parameter, such as `Partial<T>`, it stands for the fields of the type the call fills in; inside the body a type parameter bounded by a class stands for the fields of that class. A declaration of the same name, such as your own `class Partial<T>`, takes precedence. A utility type of a type without fields, and a `Pick` or `Omit` naming a field the type does not have, are errors.
+
 ## Generics
 
 Functions, methods, classes and interfaces can take type parameters:
