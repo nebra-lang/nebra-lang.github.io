@@ -86,6 +86,20 @@ declare interface Iterator
 end
 ```
 
+### Adding to a Declared Interface
+
+A `declare interface` whose name is already declared as an interface adds its members to it, so a declaration file can extend what another one declares, such as the standard library's `MathLib` behind `math`:
+
+```nebra
+declare interface MathLib
+    function Clamp(value: number, min: number, max: number): number
+end
+
+local clamped = math.Clamp(5, 0, 1)
+```
+
+Interfaces written in source code are declared once; a second one of the same name is an error.
+
 ## Module Declarations with Classes
 
 ```nebra

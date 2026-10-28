@@ -8,6 +8,16 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Added
+
+- A `declare interface` whose name is already declared as an interface adds its members to it, so a declaration file can extend an interface another one declares, such as the standard library's `MathLib`. ([#213](https://github.com/nebra-lang/nebra/issues/213))
+
+### Fixed
+
+- A missing member of an interface or enum is reported as such instead of as a type that cannot be indexed. ([#213](https://github.com/nebra-lang/nebra/issues/213))
+
 ## 0.5.16 (2026-10-28)
 
 ### Breaking
