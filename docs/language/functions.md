@@ -64,6 +64,17 @@ function obj:method(x: number): string
 end
 ```
 
+In `function T:method(...)`, `self` is the table `T` and has its type, so `self:SetModel(...)` is
+checked against what `T` is. Where `T` declares a member `method` of a function type, the
+parameters without an annotation take their types from it, the same way `function T.field(...)`
+does:
+
+```nebra
+function ENT:Touch(other)        -- other: Entity, from ENT's Touch field
+    self:SetModel("box.mdl")     -- self: ScriptedEntity
+end
+```
+
 ## Anonymous Functions
 
 ```nebra
