@@ -157,6 +157,37 @@ end
 
 `defer` can be used in functions and methods, not at the top level of a module or in a constructor. On the Lua 5.1 target it cannot be used in an `async` function.
 
+## Try, Catch & Finally
+
+`try` runs a block and catches the error it raises. `catch (err)` runs when it does, with the
+value the error was raised with, and `finally` runs afterwards either way:
+
+```nebra
+local function load(path: string): string
+    try
+        return readFile(path)
+    catch (err)
+        print("could not read " .. path .. ": " .. tostring(err))
+        return ""
+    finally
+        closeHandles()
+    end
+end
+```
+
+- The name in `catch (err)` is optional; `catch` alone ignores the error value.
+- Without `catch`, an error is raised again once `finally` has run.
+- Without both `catch` and `finally`, `try ... end` simply ignores an error.
+- An error raised inside `catch` is raised again after `finally`.
+
+A `return` in the `try` or `catch` block returns from the enclosing function, after `finally` has
+run. A function that returns from both the `try` and the `catch` block needs no return after them.
+
+Each block compiles to a function run under `pcall`, so a few things cannot cross its edge: `break`,
+`continue` and `goto` cannot leave a block, a loop inside it may use them freely, a `finally` block
+cannot `return`, and `defer` cannot be used inside the blocks. `await` works inside `try` on Lua 5.2
+and newer and on LuaJIT; Lua 5.1 cannot yield across `pcall`, so there it is an error.
+
 ## Labels & Goto
 
 ```nebra
