@@ -104,7 +104,7 @@ local handler: (string) -> void
 local factory: () -> (number, string)       -- multi-return
 ```
 
-A function literal whose parameters have no annotation takes their types from the function type it is written for: a call argument, an annotated local, a field, an assignment target or a field of a table literal. In a generic call the type parameters are filled in from the other arguments first:
+A function literal whose parameters have no annotation takes their types from the function type it is written for: a call argument, an annotated local, a field, an assignment target or a field of a table literal. The same goes for a function declared on a field, such as `function love.update(dt)`. In a generic call the type parameters are filled in from the other arguments first:
 
 ```nebra
 local function on(name: string, callback: (number) -> nil): nil

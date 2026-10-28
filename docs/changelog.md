@@ -10,6 +10,10 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ## Unreleased
 
+### Added
+
+- `function a.b(...)` takes the types of unannotated parameters from the field `b`, like an assignment of a function literal does, so `function love.update(dt)` types `dt`. ([#215](https://github.com/nebra-lang/nebra/issues/215))
+
 ### Fixed
 
 - An overload taking a union of literals, such as `mode: "fill" | "line"`, is picked for a literal argument, and a call no overload takes is reported with the overloads there are. ([#214](https://github.com/nebra-lang/nebra/issues/214))
