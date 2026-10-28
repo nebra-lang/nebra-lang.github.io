@@ -16,10 +16,14 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Added
 
+- `target = "luajit"` is accepted as another name for `"jit"`. ([#209](https://github.com/nebra-lang/nebra/issues/209))
 - `try ... catch (err) ... finally ... end`. A `return` inside `try` or `catch` returns from the enclosing function, `try` without `catch` raises the error again after `finally`, and a bare `try ... end` ignores it. ([#181](https://github.com/nebra-lang/nebra/issues/181))
-
 - A member of an enum may be written without the enum where a value of that enum is expected: `local color: Color = Red`, as an argument, in an assignment, a `return`, a comparison, a `match` case or a table field. ([#165](https://github.com/nebra-lang/nebra/issues/165))
 - A class may declare several constructors with different parameter types. `new` and `super(...)` pick the one the arguments fit, at compile time where it is known and through `new` at runtime otherwise. ([#182](https://github.com/nebra-lang/nebra/issues/182))
+
+### Fixed
+
+- A `nebra.toml` that cannot be read, such as one with an unknown `target`, stops the build instead of building with every setting at its default. ([#209](https://github.com/nebra-lang/nebra/issues/209))
 
 ## 0.5.15 (2026-10-27)
 
