@@ -178,6 +178,18 @@ This mirrors npm's `--ignore-scripts` default-flipped to safe-by-default. Truste
 
 The registry is the GitHub repository [`nebra-lang/pm-registry`](https://github.com/nebra-lang/pm-registry). It maps scoped names to public repositories; the versions are those repositories' git tags, so a package is published once and released by tagging.
 
+### Type declarations for games and frameworks
+
+| Package | For | Scaffold a project |
+|---|---|---|
+| `@nebra-lang/nanos-world` | [nanos world](https://nanos.world) | `nebra create https://raw.githubusercontent.com/nebra-lang/nanos-world-types/main/setup.lua my-package` |
+| `@nebra-lang/love2d` | [LÖVE](https://love2d.org) | `nebra create https://raw.githubusercontent.com/nebra-lang/love2d-types/main/setup.lua my-game` |
+| `@nebra-lang/gmod` | [Garry's Mod](https://gmod.facepunch.com) | `nebra create https://raw.githubusercontent.com/nebra-lang/gmod-types/main/setup.lua my-addon` |
+
+Each declares the whole API of its target, generated from its official documentation, with typed callbacks and events where the target has them. The setup scripts write a `nebra.toml` with the right target, folder layout and sides.
+
+The CLI caches the index for a day; a name it does not have refreshes it, so a package is found as soon as it is published.
+
 ### Publishing your own package
 
 1. Have a `nebra.toml` with a `name` in a public GitHub repository, at its root or in a directory of a monorepo.

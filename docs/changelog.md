@@ -16,6 +16,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Fixed
 
+- A package published since the registry index was cached is found right away: a name the cached index does not have refreshes it. ([#217](https://github.com/nebra-lang/nebra/issues/217))
 - `function T:method(...)` declares `self`, typed as `T`, and takes the types of its parameters from the member `method` of `T`; a parameter named like a type no longer hides the type in its annotation; a declared class needs no `super()` call. ([#216](https://github.com/nebra-lang/nebra/issues/216))
 - An overload taking a union of literals, such as `mode: "fill" | "line"`, is picked for a literal argument, and a call no overload takes is reported with the overloads there are. ([#214](https://github.com/nebra-lang/nebra/issues/214))
 
