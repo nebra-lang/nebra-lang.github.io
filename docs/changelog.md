@@ -16,7 +16,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Added
 
-- Completion puts what fits the expected type first: the members of an expected enum as the shorthand, then values and functions of that type, in an annotated local, an argument, an assignment, a `return`, a comparison and a `match` case. ([#211](https://github.com/nebra-lang/nebra/issues/211))
+- Completion puts what fits the expected type first: the members of an expected enum as the shorthand, then values and functions of that type, in an annotated local, an argument, an assignment, a `return`, a comparison, a `match` case and a field or element of a table literal. ([#211](https://github.com/nebra-lang/nebra/issues/211))
 - `target = "luajit"` is accepted as another name for `"jit"`. ([#209](https://github.com/nebra-lang/nebra/issues/209))
 - `try ... catch (err) ... finally ... end`. A `return` inside `try` or `catch` returns from the enclosing function, `try` without `catch` raises the error again after `finally`, and a bare `try ... end` ignores it. ([#181](https://github.com/nebra-lang/nebra/issues/181))
 - A member of an enum may be written without the enum where a value of that enum is expected: `local color: Color = Red`, as an argument, in an assignment, a `return`, a comparison, a `match` case or a table field. ([#165](https://github.com/nebra-lang/nebra/issues/165))

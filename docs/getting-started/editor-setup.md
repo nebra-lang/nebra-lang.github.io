@@ -62,7 +62,7 @@ would say.
 |---------|-------|
 | Diagnostics | Errors and warnings as you type, with the same codes and help text the CLI prints |
 | Hover | Inferred type of any expression, resolved signatures, and your `---` doc comments |
-| Completion | Scope-aware symbols, class and interface members, and primitive type names inside annotations. Where a value of a known type is expected (an annotated local, an argument, an assignment, a `return`, `==` or a `match` case), what fits comes first: the members of an expected enum, written as the [shorthand](../language/enums.md#member-shorthand), then the values and functions of that type |
+| Completion | Scope-aware symbols, class and interface members, and primitive type names inside annotations. Where a value of a known type is expected (an annotated local, an argument, an assignment, a `return`, `==`, a `match` case, or a field or element of a table literal written for a known type), what fits comes first: the members of an expected enum, written as the [shorthand](../language/enums.md#member-shorthand), then the values and functions of that type |
 | Signature help | Parameter hints while you type a call, including overloads |
 | Go to definition | Across files and across packages, including into `.d.neb` declarations |
 | Find references | Whole-workspace symbol usage |
