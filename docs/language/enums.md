@@ -107,6 +107,8 @@ not need to be imported where it is used; a member of an enum from a declaration
 its table instead. A name that is declared in scope always means that declaration, and a name used
 where no enum is expected, such as `local color = Green`, is reported as undeclared.
 
+Completion offers the members first wherever such an enum is expected.
+
 ## Iteration
 
 Enums are iterable:
