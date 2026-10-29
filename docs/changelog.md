@@ -10,6 +10,12 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ## Unreleased
 
+### Added
+
+- The utility types `Partial`, `Required`, `Pick` and `Omit` are declared in the standard library with the new `declare type Name<T>` form, so they are completed, hovered and documented. ([#221](https://github.com/nebra-lang/nebra/issues/221))
+- Completion knows where a type is written: after `:`, `->`, `extends`, `implements`, `keyof`, `as` and `is`, inside type arguments, unions and function types it offers only types and `keyof`, and completes a generic type with its type argument list. ([#221](https://github.com/nebra-lang/nebra/issues/221))
+- The keys of `Pick<User, |>`, `Omit<User, |>` and `User[|]` complete as the field names of `User`, and a value whose type takes literals, such as `keyof Events` or `"fill" | "line"`, completes with those literals first, also inside a string being typed. ([#221](https://github.com/nebra-lang/nebra/issues/221))
+
 ### Fixed
 
 - `sealed`, `keyof`, `try`, `catch` and `finally` are highlighted as keywords, also after a `:` in a type annotation, while a keyword used as a member name, such as `promise:catch(...)`, is highlighted as a plain name. ([#219](https://github.com/nebra-lang/nebra/issues/219))

@@ -239,7 +239,7 @@ local function contact(person: Pick<User, "name" | "email">): string
 end
 ```
 
-The result is a struct type, checked by its shape like any other, so a table literal written for it takes its fields and callbacks. Used with a type parameter, such as `Partial<T>`, it stands for the fields of the type the call fills in; inside the body a type parameter bounded by a class stands for the fields of that class. A declaration of the same name, such as your own `class Partial<T>`, takes precedence. A utility type of a type without fields, and a `Pick` or `Omit` naming a field the type does not have, are errors.
+The result is a struct type, checked by its shape like any other, so a table literal written for it takes its fields and callbacks. Used with a type parameter, such as `Partial<T>`, it stands for the fields of the type the call fills in; inside the body a type parameter bounded by a class stands for the fields of that class. They are declared in the standard library with [`declare type`](declarations.md#declaring-built-in-types), so the editor completes and documents them; a declaration of the same name, such as your own `class Partial<T>`, takes precedence. A utility type of a type without fields, and a `Pick` or `Omit` naming a field the type does not have, are errors.
 
 ## Generics
 

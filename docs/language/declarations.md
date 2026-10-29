@@ -100,6 +100,17 @@ local clamped = math.Clamp(5, 0, 1)
 
 Interfaces written in source code are declared once; a second one of the same name is an error.
 
+## Declaring Built-in Types
+
+`declare type` declares a type the compiler builds itself. It gives the type a place to be found, completed, hovered and documented, while what it stands for is worked out by the compiler. The standard library declares the [utility types](types.md#utility-types) this way:
+
+```nebra
+--- Every field of the struct, class or interface `T`, each made optional.
+declare type Partial<T>
+```
+
+Only the compiler's own types can be declared like this. A declaration of the same name in your code, such as `interface Pick`, takes the place of the built-in one.
+
 ## Module Declarations with Classes
 
 ```nebra
