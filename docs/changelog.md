@@ -15,9 +15,11 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 - The utility types `Partial`, `Required`, `Pick` and `Omit` are declared in the standard library with the new `declare type Name<T>` form, so they are completed, hovered and documented. ([#221](https://github.com/nebra-lang/nebra/issues/221))
 - Completion knows where a type is written: after `:`, `->`, `extends`, `implements`, `keyof`, `as` and `is`, inside type arguments, unions and function types it offers only types and `keyof`, and completes a generic type with its type argument list. ([#221](https://github.com/nebra-lang/nebra/issues/221))
 - The keys of `Pick<User, |>`, `Omit<User, |>` and `User[|]` complete as the field names of `User`, and a value whose type takes literals, such as `keyof Events` or `"fill" | "line"`, completes with those literals first, also inside a string being typed. ([#221](https://github.com/nebra-lang/nebra/issues/221))
+- The code between the braces of an interpolated string is highlighted like code, and completes values, members and the keywords an expression can use; the text around it completes nothing. ([#222](https://github.com/nebra-lang/nebra/issues/222))
 
 ### Fixed
 
+- Hover, go to definition and diagnostics find the code inside an interpolated string, which used to be placed at the start of the file. ([#222](https://github.com/nebra-lang/nebra/issues/222))
 - `sealed`, `keyof`, `try`, `catch` and `finally` are highlighted as keywords, also after a `:` in a type annotation, while a keyword used as a member name, such as `promise:catch(...)`, is highlighted as a plain name. ([#219](https://github.com/nebra-lang/nebra/issues/219))
 - A file of the standard library opened from the compiler's sources, such as `stdlib/test.d.neb`, takes the place of its embedded copy instead of declaring its names twice, and hovering a `declare module` shows the module with its members. ([#220](https://github.com/nebra-lang/nebra/issues/220))
 
