@@ -13,6 +13,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 ### Fixed
 
 - `sealed`, `keyof`, `try`, `catch` and `finally` are highlighted as keywords, also after a `:` in a type annotation, while a keyword used as a member name, such as `promise:catch(...)`, is highlighted as a plain name. ([#219](https://github.com/nebra-lang/nebra/issues/219))
+- A file of the standard library opened from the compiler's sources, such as `stdlib/test.d.neb`, takes the place of its embedded copy instead of declaring its names twice, and hovering a `declare module` shows the module with its members. ([#220](https://github.com/nebra-lang/nebra/issues/220))
 
 ## 0.5.18 (2026-10-28)
 
