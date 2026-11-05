@@ -77,7 +77,8 @@ under `lsp.nebra.settings`, with the same names the VS Code extension uses:
   "lsp": {
     "nebra": {
       "binary": {
-        "path": "/opt/nebra/bin/nebra"
+        "path": "/opt/nebra/bin/nebra",
+        "arguments": ["lps"]
       },
       "settings": {
         "inlayHints": {
@@ -104,7 +105,8 @@ under `lsp.nebra.settings`, with the same names the VS Code extension uses:
 | `sideMarkers` | `"hover"` | `"off"` leaves the side code runs on out of the hover. |
 | `diagnostics.delay` | `120` | Milliseconds the server waits after typing stops before it updates diagnostics. |
 
-Zed shows inlay hints only with `inlay_hints.enabled` set.
+Zed starts a binary set in `binary.path` with only the `binary.arguments` given next to it, so
+they must be `["lps"]`. Zed shows inlay hints only with `inlay_hints.enabled` set.
 
 Tests written with `nebra:test` get run buttons in the gutter next to `test(...)`, `it(...)` and
 `describe(...)`, which run that test or suite with `nebra test <file> <name>`. `task: spawn` offers
