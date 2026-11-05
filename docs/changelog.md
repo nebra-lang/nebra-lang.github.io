@@ -8,6 +8,12 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Fixed
+
+- Completion works in Zed and other clients that require a title on every command: functions completed as a call no longer send their command without one, which made Zed drop the whole list. ([#223](https://github.com/nebra-lang/nebra/issues/223))
+
 ## 0.5.19 (2026-10-29)
 
 ### Added
