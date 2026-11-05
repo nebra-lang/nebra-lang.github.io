@@ -53,6 +53,68 @@ The extension activates on any `.neb` or `.d.neb` file, finds `nebra` on your `P
 Server logs appear in the **Nebra Language Server** output channel, which is the first place to look
 if something behaves oddly.
 
+## Zed
+
+The [Nebra extension for Zed](https://github.com/nebra-lang/zed-nebra) brings a tree-sitter grammar
+for highlighting, brackets, indentation, the outline and text objects, and starts the language server
+for `.neb` and `.d.neb` files.
+
+Until it is listed under `zed: extensions`, install it from a checkout:
+
+```bash
+git clone https://github.com/nebra-lang/zed-nebra
+```
+
+Then run `zed: install dev extension` from the command palette and pick the `zed-nebra` directory.
+Zed builds the extension itself, which needs Rust installed through `rustup`.
+
+The extension starts `nebra lps` with the binary set in `lsp.nebra.binary.path`, otherwise `nebra`
+on your `PATH`, otherwise the latest release downloaded for your platform. The server settings go
+under `lsp.nebra.settings`, with the same names the VS Code extension uses:
+
+```json title="settings.json"
+{
+  "lsp": {
+    "nebra": {
+      "binary": {
+        "path": "/opt/nebra/bin/nebra"
+      },
+      "settings": {
+        "inlayHints": {
+          "types": true,
+          "parameterNames": true
+        },
+        "sideMarkers": "hover",
+        "diagnostics": {
+          "delay": 120
+        }
+      }
+    }
+  },
+  "inlay_hints": {
+    "enabled": true
+  }
+}
+```
+
+| Setting | Default | What it does |
+|---------|---------|--------------|
+| `inlayHints.types` | `true` | Show the inferred type of locals declared without an annotation. |
+| `inlayHints.parameterNames` | `true` | Show parameter names before the arguments of a call. |
+| `sideMarkers` | `"hover"` | `"off"` leaves the side code runs on out of the hover. |
+| `diagnostics.delay` | `120` | Milliseconds the server waits after typing stops before it updates diagnostics. |
+
+Zed shows inlay hints only with `inlay_hints.enabled` set.
+
+Tests written with `nebra:test` get run buttons in the gutter next to `test(...)`, `it(...)` and
+`describe(...)`, which run that test or suite with `nebra test <file> <name>`. `task: spawn` offers
+`nebra build`, `run`, `test`, `watch`, `install`, `compile` and `docs`, run in the root of the
+worktree.
+
+Unlike in VS Code, the side of a function is shown only in its hover, without the colored markers in
+the editor, and there is no command to compile a single file. Use the `nebra build` task instead.
+The server logs are under `dev: open language server logs`.
+
 ## What the language server gives you
 
 The server runs the same compiler pipeline the CLI does, so its answers match what `nebra build`
