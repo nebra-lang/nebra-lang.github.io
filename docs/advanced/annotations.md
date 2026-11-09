@@ -252,7 +252,7 @@ A small set of annotations is recognised directly by the compiler. They don't go
   declare class Entity
   ```
 
-  The host then calls them for every key it does not find itself, the fields the class declares included. With `operator []=` calling `self:SetValue(key, value)` and `operator []` calling `self:GetValue(key, nil)`, a declared field lives in the entity's values. A class declaring only one of the two should keep that in mind: a field written through `operator []=` is read back through the host.
+  Reads and writes then reach them under the rules of the host, and a field the class declares is a key like any other. With `operator []=` calling `self:SetValue(key, value)` and `operator []` calling `self:GetValue(key, nil)`, a declared field lives in the entity's values. A class declaring only one of the two should keep that in mind: a field written through `operator []=` is read back through the host.
 - `@overrideIs("template")` - overrides how `value is ClassName`, `instanceof` and a type pattern in `match` test against a class and the classes extending it, for objects whose class Lua's metatables say nothing about. The template is a Lua condition with two placeholders:
     - `$value` - the value being tested, which can be anything, `nil` included
     - `$class` - the resolved name of the class tested against
@@ -260,7 +260,7 @@ A small set of annotations is recognised directly by the compiler. They don't go
   The value is evaluated once, even when the template uses it several times. The `nanos-world-types` package uses it to test through `IsA`:
 
   ```lua
-  @overrideIs('$value ~= nil and $value:IsA($class)')
+  @overrideIs('(type($value) == "table" or type($value) == "userdata") and $value.IsA ~= nil and $value:IsA($class)')
   declare class Entity
   ```
 
