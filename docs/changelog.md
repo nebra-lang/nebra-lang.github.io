@@ -18,6 +18,7 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ### Added
 
+- Runtime errors of `nebra run` and failures of `nebra test`, tracebacks included, name the `.neb` file and line instead of the generated Lua. ([#238](https://github.com/nebra-lang/nebra/issues/238))
 - `source_maps = true` writes a `.lua.map` next to every generated file, mapping its lines to the `.neb` source, so a host can translate tracebacks. ([#229](https://github.com/nebra-lang/nebra/issues/229))
 - Parameters of function types can be named, in any number: `(entity: number, value: string?) -> nil`. ([#237](https://github.com/nebra-lang/nebra/issues/237))
 - [`contract`](language/contracts.md) declares a strict interface: a table with any other field is a type error, and fields can carry the rules `@range`, `@integer`, `@length`, `@nonEmpty` and `@pattern`, checked for literals at compile time and by `is` and `match` at runtime. ([#234](https://github.com/nebra-lang/nebra/issues/234))

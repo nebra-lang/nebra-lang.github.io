@@ -125,6 +125,9 @@ translate a position in a traceback back to the `.neb` source:
 line of generated line `n + 1`, and 0 for a line that comes from no source, such
 as a helper at the top of the file.
 
+`nebra run` and `nebra test` report `.neb` positions in their errors without
+this option.
+
 ### `globals` (list of string, default `[]`)
 
 Extra directories or single files that are scanned for `.d.neb` files at
