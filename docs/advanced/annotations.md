@@ -211,6 +211,39 @@ A small set of annotations is recognised directly by the compiler. They don't go
   ```
 
   When the template has no `$args` placeholder, the compiler appends a default `(args)` call so the arguments are never silently dropped.
+- `@overrideInherit("template")` - for a host that creates subclasses of its classes itself. Written on a `declare class`, it applies to every class extending that class, directly or further down. The template is the Lua expression that creates the class table:
+    - `$base` - the resolved name of the class being extended
+    - `$name` - the name of the new class as a quoted string
+
+  Example: nanos world creates a subclass with `Prop.Inherit("Name")`. The `nanos-world-types` package writes `@overrideInherit("$base.Inherit($name)")` on `Entity`, so a plain `extends` is all it takes:
+
+  ```lua
+  -- source
+  class Crate extends Prop
+      constructor(location: Vector)
+          super(location, new Rotator(), "nanos-world::SM_Cube")
+      end
+
+      override function SetScale(scale: Vector): nil
+          super:SetScale(scale)
+      end
+  end
+
+  local crate = new Crate(new Vector())
+
+  -- generated Lua
+  Crate = Prop.Inherit("Crate")
+  function Crate:Constructor(location)
+      self.Super:Constructor(location, Rotator(), "nanos-world::SM_Cube")
+  end
+  function Crate:SetScale(scale)
+      self.Super:SetScale(scale)
+  end
+
+  local crate = Crate(Vector())
+  ```
+
+  `super` reaches a method or constructor of the host through `self.Super`, and one of a base class compiled from Nebra through that class. `new` follows the `@overrideCtor` of the nearest base class that has one. The host keeps the metatable of its objects, so such a class cannot declare accessors or the `[]`, `[]=` and `()` operators. Written on a class compiled from Nebra, the template applies to that class alone, which is how a single class gets a different registered name.
 
 ---
 

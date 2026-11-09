@@ -8,6 +8,12 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Added
+
+- The builtin annotation `@overrideInherit("template")` lets a declared class decide how classes extending it are created, for hosts with their own inheritance: such a class is created through the template, constructs through `Constructor`, reaches the host through `self.Super` and is spawned like its base. With it, `class Crate extends Prop` works in nanos world through `Prop.Inherit`. ([#224](https://github.com/nebra-lang/nebra/issues/224))
+
 ## 0.5.20 (2026-11-05)
 
 ### Fixed
