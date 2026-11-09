@@ -8,6 +8,17 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Added
+
+- [`contract`](language/contracts.md) declares a strict interface: a table with any other field is a type error, and fields can carry the rules `@range`, `@integer`, `@length`, `@nonEmpty` and `@pattern`, checked for literals at compile time and by `is` and `match` at runtime. ([#234](https://github.com/nebra-lang/nebra/issues/234))
+
+### Fixed
+
+- A method without a return type takes it from its body, like a function does, instead of reporting its `return` as returning a value from a function that returns `nil`. ([#235](https://github.com/nebra-lang/nebra/issues/235))
+- Classes, interfaces and enums of one name in different files are different types. They used to be merged, so the members of one were accepted on the other, even with an explicit import. ([#233](https://github.com/nebra-lang/nebra/issues/233))
+
 ## 0.5.23 (2026-11-09)
 
 ### Added

@@ -138,6 +138,8 @@ distance({ x = 3 })           -- z is optional
 
 A plain table has no class to supply a default method, so it must provide every method itself.
 
+A table may have fields beyond the ones an interface asks for. To reject those, and to check values, use a [contract](./contracts.md).
+
 ## Exported Interfaces
 
 ```nebra
