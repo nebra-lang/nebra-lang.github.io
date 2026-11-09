@@ -10,8 +10,16 @@ All notable changes to Nebra are listed here, newest first. Entries under **Brea
 
 ## Unreleased
 
+### Breaking
+
+- An import of a module that runs on a side the importing file does not run on is an error under `[sides]`, as it would fail at runtime on that side. `import type` stays allowed. ([#231](https://github.com/nebra-lang/nebra/issues/231))
+- The variables of `for ... in ipairs(t)` and `pairs(t)` take the types of `t`, and values declared before a class are checked inside its fields, constructors and methods. Both were `any`, so code that was wrong can now report errors. ([#236](https://github.com/nebra-lang/nebra/issues/236), [#232](https://github.com/nebra-lang/nebra/issues/232))
+- `nebra build` removes what earlier builds left in the output directory; `--no-clean` keeps it. A directory that is not one of its own, such as the project root or one containing the sources, is left alone with a warning. ([#230](https://github.com/nebra-lang/nebra/issues/230))
+
 ### Added
 
+- `source_maps = true` writes a `.lua.map` next to every generated file, mapping its lines to the `.neb` source, so a host can translate tracebacks. ([#229](https://github.com/nebra-lang/nebra/issues/229))
+- Parameters of function types can be named, in any number: `(entity: number, value: string?) -> nil`. ([#237](https://github.com/nebra-lang/nebra/issues/237))
 - [`contract`](language/contracts.md) declares a strict interface: a table with any other field is a type error, and fields can carry the rules `@range`, `@integer`, `@length`, `@nonEmpty` and `@pattern`, checked for literals at compile time and by `is` and `match` at runtime. ([#234](https://github.com/nebra-lang/nebra/issues/234))
 
 ### Fixed

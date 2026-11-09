@@ -69,6 +69,7 @@ Compiles the project (no args) or specific `.neb` files (with args).
 nebra build                          # project mode
 nebra build src/foo.neb src/bar.neb  # file mode
 nebra build nebra.toml src/main.neb    # explicit config
+nebra build --no-clean               # keep files from earlier builds in the output directory
 ```
 
 Pre/post-build scripts from `[scripts]` run before/after compilation.

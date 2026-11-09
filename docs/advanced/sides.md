@@ -119,6 +119,18 @@ this client+shared-side file
 Errors stay normal compile errors, so your editor underlines the offending
 reference and your CI fails the build.
 
+## Imports
+
+A module belongs to the sides its file accepts. Importing one is an error when it accepts a side the importing file does not, because that side would not have the file at runtime:
+
+```nebra
+-- src/Shared/recipes.neb
+import { secret } from "Server/secret"      -- error
+import type { Secret } from "Server/secret" -- allowed, loads nothing
+```
+
+Side-effect imports, glob imports and `export { } from` are checked the same way. A module or importing file outside every glob is unrestricted.
+
 ## Notes & limits
 
 - `@side` works on whole declarations **and** on individual class /

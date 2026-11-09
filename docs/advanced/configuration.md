@@ -55,7 +55,11 @@ Entry-point Nebra file for `nebra run` / `nebra compile`. Defaults to
 ### `output` (string, default `"out"`)
 
 Directory the transpiled Lua files are written to (relative to the project
-root). Wiped on every `nebra build` unless `--no-clean` is passed.
+root). `nebra build` removes what earlier builds left here unless `--no-clean`
+is passed. Files written since the build started, such as by a pre-build
+script, stay. A directory that is not one of its own is left alone with a
+warning: the project root, one outside the project, one containing the source
+directory, `nebra.toml` or installed packages, and a symbolic link.
 
 ### `source` (string, default `"src"`)
 
@@ -107,6 +111,19 @@ producing a doc site next to the generated Lua. See
 When `true`, `nebra build` also emits `.d.neb` declaration files alongside
 each compiled module so downstream consumers can type-check against this
 project without re-reading the source.
+
+### `source_maps` (bool, default `false`)
+
+Writes a `.lua.map` next to every generated file, so a host embedding Lua can
+translate a position in a traceback back to the `.neb` source:
+
+```json
+{ "version": 1, "file": "main.lua", "source": "../src/main.neb", "lines": [0, 0, 3, 3, 5] }
+```
+
+`source` is relative to the map. The entry at index `n` of `lines` is the source
+line of generated line `n + 1`, and 0 for a line that comes from no source, such
+as a helper at the top of the file.
 
 ### `globals` (list of string, default `[]`)
 
