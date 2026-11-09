@@ -55,6 +55,25 @@ Runs the module without binding any names:
 import "polyfill"
 ```
 
+### Glob Import
+
+A side-effect import can load every matching file at once:
+
+```lua
+import "models/*.neb"
+```
+
+This is the same as writing one import per file, in alphabetical order:
+
+```lua
+import "models/Inventory"
+import "models/Player"
+```
+
+`*` matches within a directory and `**` across directories, so `"models/**/*.neb"` also reaches the files of nested directories. The `.neb` at the end is optional. Like any path, a glob is tried against the directory of the importing file first and the source root after it. The importing file itself and `.d.neb` files are left out. A glob that matches nothing is a warning.
+
+Only side-effect imports can be globs: a named import needs to know which module each name comes from.
+
 ### Type Import
 
 Brings in names that are only used as types. Nothing is loaded at runtime, so two modules may import each other's types, which a regular import rejects as a cycle:

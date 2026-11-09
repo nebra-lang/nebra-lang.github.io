@@ -8,6 +8,18 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Added
+
+- `import "models/*.neb"` imports every matching file, like one side-effect import per file; `**` reaches nested directories. ([#228](https://github.com/nebra-lang/nebra/issues/228))
+- Completion and the import quick fix offer the exports of installed packages from `nebra_modules/`, as `import { Model } from "nanos-orm"`, and the types of the other modules of a `runtime_global` package through `import type`. ([#227](https://github.com/nebra-lang/nebra/issues/227))
+
+### Fixed
+
+- The exports of other files are completed from the start of a word. A request sent before its first letter, such as after a space, left them out, and editors kept filtering that list, so they never appeared. ([#227](https://github.com/nebra-lang/nebra/issues/227))
+- The import quick fix finds every exported declaration, such as `export abstract class`, and no longer suggests a file that only mentions the name in an `export local` line. Adding a name no longer merges it into an `import type` or `export { } from` line. ([#227](https://github.com/nebra-lang/nebra/issues/227))
+
 ## 0.5.22 (2026-11-09)
 
 ### Added
