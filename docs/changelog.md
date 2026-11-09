@@ -8,6 +8,13 @@ description: "What changed in each Nebra release, newest first."
 
 All notable changes to Nebra are listed here, newest first. Entries under **Breaking** can make code that compiled before report errors; they are listed first so you can check them before upgrading.
 
+## Unreleased
+
+### Added
+
+- `operator []` and `operator []=` work on classes created through `@overrideInherit` when the annotation names the methods of the host with `index` and `newindex`, so in nanos world they run as the `index` and `newindex` hooks of an inherited class. ([#225](https://github.com/nebra-lang/nebra/issues/225))
+- The builtin annotation `@overrideIs("template")` lets a class decide how `is`, `instanceof` and type patterns test against it and the classes extending it, which in nanos world go through `IsA`. ([#225](https://github.com/nebra-lang/nebra/issues/225))
+
 ## 0.5.21 (2026-11-09)
 
 ### Added

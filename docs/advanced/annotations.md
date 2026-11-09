@@ -243,7 +243,26 @@ A small set of annotations is recognised directly by the compiler. They don't go
   local crate = Crate(Vector())
   ```
 
-  `super` reaches a method or constructor of the host through `self.Super`, and one of a base class compiled from Nebra through that class. `new` follows the `@overrideCtor` of the nearest base class that has one. The host keeps the metatable of its objects, so such a class cannot declare accessors or the `[]`, `[]=` and `()` operators. Written on a class compiled from Nebra, the template applies to that class alone, which is how a single class gets a different registered name.
+  `super` reaches a method or constructor of the host through `self.Super`, and one of a base class compiled from Nebra through that class. `new` follows the `@overrideCtor` of the nearest base class that has one. Written on a class compiled from Nebra, the template applies to that class alone, which is how a single class gets a different registered name.
+
+  The host keeps the metatable of its objects, so such a class cannot declare accessors or `operator ()`. `operator []` and `operator []=` need a method of the host to be called through, named by the arguments `index` and `newindex`:
+
+  ```lua
+  @overrideInherit("$base.Inherit($name)", index = "index", newindex = "newindex")
+  declare class Entity
+  ```
+
+  The host then calls them for every key it does not find itself, the fields the class declares included. With `operator []=` calling `self:SetValue(key, value)` and `operator []` calling `self:GetValue(key, nil)`, a declared field lives in the entity's values. A class declaring only one of the two should keep that in mind: a field written through `operator []=` is read back through the host.
+- `@overrideIs("template")` - overrides how `value is ClassName`, `instanceof` and a type pattern in `match` test against a class and the classes extending it, for objects whose class Lua's metatables say nothing about. The template is a Lua condition with two placeholders:
+    - `$value` - the value being tested, which can be anything, `nil` included
+    - `$class` - the resolved name of the class tested against
+
+  The value is evaluated once, even when the template uses it several times. The `nanos-world-types` package uses it to test through `IsA`:
+
+  ```lua
+  @overrideIs('$value ~= nil and $value:IsA($class)')
+  declare class Entity
+  ```
 
 ---
 
